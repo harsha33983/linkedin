@@ -1,0 +1,36 @@
+Quality gate flagged version v2: [
+  'Check 1: No fabricated statistics found',
+  'Check 2: No invented anecdotes found',
+  "Check 3: Hook uses a similar pattern to recent hook #3 (both start with 'Everyone ...')"
+]
+Quality gate flagged version v3: [
+  'Check 1: Post contains an unsupported claim that a breach was caused by a single line of code without any citation or evidence.',
+  'Check 2: No invented anecdotes were found.',
+  'Check 3: Hook does not match or closely resemble any of the user’s recent hooks.'
+]
+API Error: Error: Unauthorized
+    at requireAuthFromRequest (webpack-internal:///(rsc)/./src/lib/auth/get-session.ts:57:11)
+    at async GET (webpack-internal:///(rsc)/./src/app/api/voice/route.ts:49:24)
+    at async C:\Users\Harsha\Music\linked in\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:57228
+    at async eT.execute (C:\Users\Harsha\Music\linked in\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:46851)
+    at async eT.handle (C:\Users\Harsha\Music\linked in\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:6:58760)
+    at async doRender (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\base-server.js:1366:42)
+    at async cacheEntry.responseCache.get.routeKind (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\base-server.js:1588:28)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\base-server.js:1496:28)
+    at async DevServer.renderPageComponent (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\base-server.js:1924:24)
+    at async DevServer.renderToResponseImpl (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\base-server.js:1962:32)
+    at async DevServer.pipeImpl (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\base-server.js:922:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\next-server.js:272:17)
+    at async DevServer.handleRequestImpl (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\base-server.js:818:17)
+    at async C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\dev\next-dev-server.js:339:20
+    at async Span.traceAsyncFn (C:\Users\Harsha\Music\linked in\node_modules\next\dist\trace\trace.js:154:20)
+    at async DevServer.handleRequest (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\dev\next-dev-server.js:336:24)
+    at async invokeRender (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\lib\router-server.js:179:21)
+    at async handleRequest (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\lib\router-server.js:359:24)
+    at async requestHandlerImpl (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\lib\router-server.js:383:13)
+    at async Server.requestListener (C:\Users\Harsha\Music\linked in\node_modules\next\dist\server\lib\start-server.js:141:13)
+npm notice
+npm notice New major version of npm available! 11.7.0 -> 12.0.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+npm notice To update run: npm install -g npm@12.0.2
+npm notice
