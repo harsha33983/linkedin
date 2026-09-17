@@ -19,6 +19,8 @@ import { sql } from "@/lib/db";
 import { decrypt } from "@/lib/encryption/tokens";
 import { recordAuditEvent } from "@/lib/audit/service";
 import { runContentSafetyChecks } from "@/lib/content/safety";
+import { generateHashtags } from "@/lib/linkedin/hashtags";
+import { isAllowedImageUrl } from "@/lib/linkedin/image-url";
 
 const LINKEDIN_POSTS_API = "https://api.linkedin.com/rest/posts";
 const LINKEDIN_IMAGES_API = "https://api.linkedin.com/rest/images";
@@ -58,9 +60,27 @@ export async function publishTextPost(params: {
   const { postId, userId, socialAccountId, request } = params;
 
   // Read content + imageUrl from DB if not provided
-  const [postRecord] = await sql`SELECT content, "imageUrl" FROM posts WHERE id = ${postId} LIMIT 1`;
-  const content = params.content || postRecord?.content || "";
+  const [postRecord] = await sql`SELECT content, "imageUrl", topic FROM posts WHERE id = ${postId} LIMIT 1`;
+  let content = params.content || postRecord?.content || "";
   const imageUrl = params.imageUrl || postRecord?.imageUrl || null;
+
+  // Pre-publish step: append trending hashtags related to the post.
+  // Skipped when the content already carries enough hashtags (user's own).
+  const existingTags = (content.match(/#[\w]+/g) || []).length;
+  if (existingTags < 3) {
+    try {
+      const tags = await generateHashtags({
+        content,
+        topic: postRecord?.topic || null,
+      });
+      if (tags.length > 0) {
+        content = `${content}\n\n${tags.join(" ")}`;
+      }
+    } catch (err) {
+      // Hashtag generation must never block publishing.
+      console.warn("[LinkedIn] Hashtag generation failed, publishing without tags:", String(err).slice(0, 120));
+    }
+  }
 
   // 1. Idempotency lock
   const lockId = `publish_${postId}_${Date.now()}`;
@@ -254,10 +274,13 @@ export async function publishTextPost(params: {
       response.headers.get("location")?.split("/").pop() ||
       `linkedin_${Date.now()}`;
 
-    // Update post (posts timestamps are naive-UTC — store UTC wall clock)
+    // Update post (posts timestamps are naive-UTC — store UTC wall clock).
+    // The final content (with appended hashtags) is persisted so the in-app
+    // copy matches exactly what was published on LinkedIn.
     await sql`
       UPDATE posts SET
         status = 'PUBLISHED',
+        content = ${content},
         "publishedAt" = (CURRENT_TIMESTAMP AT TIME ZONE 'UTC'),
         "externalPostId" = ${externalPostId},
         "publishingProvider" = 'linkedin',
@@ -265,6 +288,7 @@ export async function publishTextPost(params: {
           httpStatus: response.status,
           linkedinPostId: externalPostId,
           publishedAt: new Date().toISOString(),
+          hashtagsAppended: (content.match(/#[\w]+/g) || []).length,
         })}::jsonb,
         "publishLockId" = NULL
       WHERE id = ${postId}
@@ -477,6 +501,13 @@ async function uploadImageToLinkedIn(
   ownerUrn: string
 ): Promise<string | null> {
   try {
+    // SSRF guard: only fetch images from the allowlist (own uploads origin or
+    // Unsplash). Blocks private / loopback / metadata addresses.
+    if (!isAllowedImageUrl(imageUrl)) {
+      console.warn("[LinkedIn] Blocked image fetch from non-allowed source:", String(imageUrl).slice(0, 120));
+      return null;
+    }
+
     // 1. Download the image from URL
     const imageResponse = await fetch(imageUrl);
     if (!imageResponse.ok) {

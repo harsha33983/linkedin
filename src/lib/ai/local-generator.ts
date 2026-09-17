@@ -29,6 +29,14 @@ interface GeneratedVersion {
   structure: string;
   imageUrl?: string;
   imageQuery?: string;
+  /** Deterministic quality scores (content-quality engine). */
+  quality?: {
+    specificity: number;
+    originality: number;
+    clarity: number;
+    readability: number;
+    aiPatternRisk: number;
+  };
 }
 
 interface LocalGenerateResult {

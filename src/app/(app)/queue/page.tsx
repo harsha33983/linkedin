@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { zonedTimeToUtc } from "@/lib/tz";
+import { useLinkedInGate, connectUrl } from "@/hooks/use-linkedin-gate";
 
 interface QueuePost {
   id: string;
@@ -50,6 +51,9 @@ export default function QueuePage() {
   const [message, setMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
+  // Publishing gate: publishing/scheduling requires a connected LinkedIn account
+  const { connected: linkedinConnected } = useLinkedInGate();
+  const [connectPrompt, setConnectPrompt] = useState(false);
 
   const fetchQueue = useCallback(async () => {
     try {
@@ -115,6 +119,11 @@ export default function QueuePage() {
   };
 
   const publishNow = async (id: string, label: string) => {
+    // Gate: publishing requires a connected LinkedIn account
+    if (linkedinConnected === false) {
+      setConnectPrompt(true);
+      return;
+    }
     if (!confirm(`${label} this post to LinkedIn now?`)) return;
     try {
       const res = await fetch(`/api/queue/${id}/publish-now`, { method: "POST" });
@@ -144,6 +153,11 @@ export default function QueuePage() {
   const TIMEZONES = ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Asia/Kolkata", "Asia/Tokyo"];
 
   const schedulePost = async (id: string) => {
+    // Gate: scheduled publishing needs a connected LinkedIn account
+    if (linkedinConnected === false) {
+      setConnectPrompt(true);
+      return;
+    }
     try {
       const hour24 = scheduleAmPm === "PM" ? (scheduleHour % 12) + 12 : scheduleHour % 12;
       const time = `${String(hour24).padStart(2, "0")}:${String(scheduleMinute).padStart(2, "0")}`;
@@ -177,6 +191,32 @@ export default function QueuePage() {
 
       {message && (
         <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded mb-4">{message}</div>
+      )}
+
+      {/* LinkedIn connection prompt: shown when Publish/Schedule is clicked while disconnected */}
+      {connectPrompt && linkedinConnected === false && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm p-4 rounded mb-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="font-medium">Connect LinkedIn to publish</p>
+            <p className="text-amber-700">
+              Queued and scheduled posts only go out once your LinkedIn account is
+              connected.
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              size="sm"
+              onClick={() => {
+                window.location.href = connectUrl("/queue");
+              }}
+            >
+              🔗 Connect LinkedIn
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setConnectPrompt(false)}>
+              Dismiss
+            </Button>
+          </div>
+        </div>
       )}
 
       {loading ? (

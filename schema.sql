@@ -153,7 +153,8 @@ CREATE TABLE "generations" (
   "voiceDnaVersionUsed" INTEGER,
   "rejectionReason" TEXT,
   "rejectedAt" TIMESTAMP(3),
-  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "overrides" JSONB
 );
 
 CREATE TABLE "performance_signals" (

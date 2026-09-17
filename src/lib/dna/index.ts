@@ -111,19 +111,30 @@ export async function processLinkedInData(
     saves: number;
   }
 ): Promise<void> {
-  // Store the LinkedIn metrics
+  // Store the LinkedIn metrics — merged under publishingResponse.metrics so the
+  // canonical shape stays { impressions, likes, comments, reposts, saves }.
   const engagementRate =
-    (linkedinData.likes + linkedinData.comments + linkedinData.reposts + linkedinData.saves) /
-    linkedinData.impressions;
+    linkedinData.impressions > 0
+      ? (linkedinData.likes + linkedinData.comments + linkedinData.reposts + linkedinData.saves) /
+        linkedinData.impressions
+      : 0;
+
+  const [existing] = await sql`SELECT "publishingResponse" FROM posts WHERE id = ${postId} LIMIT 1`;
+  const prev = (existing?.publishingResponse as any) || {};
+  const metrics = {
+    impressions: linkedinData.impressions,
+    likes: linkedinData.likes,
+    comments: linkedinData.comments,
+    reposts: linkedinData.reposts,
+    saves: linkedinData.saves,
+    source: "linkedin",
+    fetchedAt: new Date().toISOString(),
+  };
 
   await sql`
     UPDATE posts SET
-      "publishingResponse" = ${JSON.stringify({
-        ...linkedinData,
-        engagementRate,
-        updatedAt: new Date().toISOString(),
-      })}::jsonb,
-      "updatedAt" = CURRENT_TIMESTAMP
+      "publishingResponse" = ${JSON.stringify({ ...prev, metrics })}::jsonb,
+      "updatedAt" = (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
     WHERE id = ${postId}
   `;
 

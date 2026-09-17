@@ -2,14 +2,18 @@ import { NextRequest } from "next/server";
 import { sql } from "@/lib/db";
 import { requireAuthFromRequest } from "@/lib/auth/get-session";
 import { handleApiError, ValidationError, AiGenerationError } from "@/lib/errors/api-errors";
-import { getProvider } from "@/lib/ai/types";
+import { withFailover } from "@/lib/ai/types";
 import { fetchPostImage } from "@/lib/ai/image-fetch";
-import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit/limiter";
+import { checkRateLimitRedis } from "@/lib/rate-limit/redis-limiter";
 import { getFullDNAProfile, formatDNAForPrompt } from "@/lib/dna";
 import { generatePostLocally } from "@/lib/ai/local-generator";
 import { analyzeWritingWithNLP } from "@/lib/voice/nlp-analyzer";
 import { analyzeVoiceProfile } from "@/lib/voice/analyze";
 import { importPublishedPostsAsSamples } from "@/lib/voice/posts-import";
+import { readPostMetrics } from "@/lib/linkedin/metrics";
+import { buildStyleContext, qualityGate } from "@/lib/ai/generation-context";
+import { analyzeContentQuality, shouldRegenerate, buildCorrectionInstructions, MAX_REGENERATIONS } from "@/lib/ai/content-quality";
+import { logGeneration } from "@/lib/ai/llm-router";
 import { z } from "zod";
 
 const generatePostSchema = z.object({
@@ -32,6 +36,10 @@ const generatePostSchema = z.object({
   tone: z.string().optional(),
   length: z.enum(["short", "medium", "long"]).optional(),
   targetAudience: z.string().optional(),
+  // User-provided FACTS — the strongest personalization input. All optional.
+  whatHappened: z.string().max(2000).optional(),
+  whatLearned: z.string().max(2000).optional(),
+  result: z.string().max(2000).optional(),
 });
 
 /**
@@ -52,9 +60,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = generatePostSchema.parse(body);
 
-    // Rate limit check
-    const rateLimitKey = `post-gen:${userId}`;
-    const rateLimit = checkRateLimit(rateLimitKey, RATE_LIMITS.free);
+    // Rate limit check (Redis-backed, shared across instances)
+    const rateLimit = await checkRateLimitRedis(`ai:post-gen:${userId}`, 20, 60 * 60 * 1000);
     if (!rateLimit.allowed) {
       return Response.json(
         {
@@ -137,20 +144,23 @@ export async function POST(request: NextRequest) {
       LIMIT 20
     `;
 
-    // Build performance data points (simulated metrics for now — will be real when LinkedIn analytics API is connected)
+    // Build performance data points from REAL LinkedIn metrics only.
+    // Posts without measured analytics carry zeros (never invented numbers) —
+    // the prompt layer already distinguishes "X of N posts have metrics".
     const recentPosts = publishedPosts.map((post: any) => {
-      const publishData = post.publishingResponse as any;
+      const m = readPostMetrics(post.publishingResponse);
       return {
         content: post.content,
         topic: post.topic || parsed.topic,
         format: post.format || "Educational",
         publishedAt: post.publishedAt,
-        impressions: publishData?.impressions || Math.floor(Math.random() * 5000) + 500,
-        likes: publishData?.likes || Math.floor(Math.random() * 100) + 10,
-        comments: publishData?.comments || Math.floor(Math.random() * 30) + 2,
-        reposts: publishData?.reposts || Math.floor(Math.random() * 15) + 1,
-        saves: publishData?.saves || Math.floor(Math.random() * 10) + 1,
-        engagementRate: publishData?.engagementRate || undefined,
+        impressions: m.impressions,
+        likes: m.likes,
+        comments: m.comments,
+        reposts: m.reposts,
+        saves: m.saves,
+        engagementRate: m.real ? m.engagementRate : undefined,
+        hasRealMetrics: m.real,
         hookType: detectHookType(post.content),
       };
     });
@@ -207,34 +217,65 @@ export async function POST(request: NextRequest) {
       ...(userProfile.linkedinGoals || []),
     ].filter(Boolean);
 
-    // 6. Generate posts — try AI first, fall back to local generator
-    const provider = getProvider();
+    // 5.5 Build style context: structure + humanizer + RAG examples + learned adjustments
+    const styleCtx = await buildStyleContext(userId, parsed, voiceProfile);
+
+    const recentHooksForQuality = allRecentPosts
+      .map((p: any) => (p.content || "").split("\n")[0])
+      .filter(Boolean)
+      .slice(0, 8);
+
+    // 6. Generate posts — try AI (with provider failover), fall back to local generator
     let result;
     let usedLocalGenerator = false;
+    const genStarted = Date.now();
     try {
-      result = await provider.generatePost({
-        topic: parsed.topic,
-        goal: parsed.goal,
-        format: parsed.format,
-        tone: parsed.tone,
-        length: parsed.length,
-        targetAudience: parsed.targetAudience,
-        voiceProfile: voiceProfile as any,
-        userProfile: userProfile as any,
-        recentPosts: allRecentPosts,
-        trendingTopics,
-        contentPillars,
-        dnaProfile: dnaProfile as any,
-      });
+      const { result: generated, provider: usedProvider } = await withFailover(
+        (provider) =>
+          provider.generatePost({
+            topic: parsed.topic,
+            goal: parsed.goal,
+            format: parsed.format,
+            tone: parsed.tone,
+            length: parsed.length,
+            targetAudience: parsed.targetAudience,
+            voiceProfile: voiceProfile as any,
+            userProfile: userProfile as any,
+            recentPosts: allRecentPosts,
+            trendingTopics,
+            contentPillars,
+            dnaProfile: dnaProfile as any,
+            styleContext: styleCtx,
+          }),
+        (r) =>
+          Array.isArray((r as any)?.versions) &&
+          (r as any).versions.length > 0 &&
+          (r as any).versions.every(
+            (v: any) => typeof v?.content === "string" && v.content.trim().length > 0
+          )
+      );
+      result = generated;
 
       // Validate the AI shape — models sometimes return malformed versions
       // (strings, missing content). If so, fall through to the local generator.
       if (!isValidVersions(result?.versions)) {
         throw new Error("AI returned malformed versions — falling back to local generator");
       }
+      logGeneration({
+        requestType: "generate-post", provider: usedProvider,
+        model: process.env.AI_MODEL, taskComplexity: "HIGH",
+        latencyMs: Date.now() - genStarted, status: "success",
+        promptName: "linkedin_post_stream", promptVersion: "v2", userId,
+      });
     } catch (aiError: any) {
       console.warn("[Generate] AI generation failed, using local generator:", aiError?.message?.slice(0, 100));
       usedLocalGenerator = true;
+      logGeneration({
+        requestType: "generate-post", taskComplexity: "HIGH",
+        latencyMs: Date.now() - genStarted, status: "fallback",
+        errorCode: "ALL_PROVIDERS_FAILED",
+        promptName: "linkedin_post_stream", promptVersion: "v2", userId,
+      });
 
       // Build NLP profile from samples for local generation
       const allSamples = await sql`
@@ -262,36 +303,65 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 7. Quality gate — check each version
-    const recentGenerations = await sql`
-      SELECT output FROM generations 
-      WHERE "userId" = ${userId} AND type = 'post'
-      ORDER BY "createdAt" DESC
-      LIMIT 10
-    `;
-
-    const recentHooks = recentGenerations
-      .map((g: any) => {
-        const output = g.output as any;
-        return output?.versions?.[0]?.hook || "";
-      })
-      .filter(Boolean);
-
-    // Quality gate (skip for local generator — templates are pre-validated)
+    // 7. Deterministic quality gate — zero LLM cost. High AI-pattern risk on
+    // every version triggers exactly ONE corrective regeneration (bounded).
+    let regenerations = 0;
     if (!usedLocalGenerator) {
-      for (const version of result.versions) {
-        const qualityCheck = await provider.checkQuality(
-          version.content,
-          voiceProfile as any,
-          recentHooks
-        );
+      const analyses = result.versions.map((v: any) =>
+        analyzeContentQuality(v.content, { userFacts: styleCtx.facts, recentHooks: recentHooksForQuality })
+      );
 
-        if (!qualityCheck.passes) {
-          console.warn(
-            `Quality gate flagged version ${version.id}:`,
-            qualityCheck.details
+      if (analyses.every((q: any) => shouldRegenerate(q, 0))) {
+        regenerations = 1;
+        console.warn("[Generate] All versions failed quality gate — one corrective regeneration");
+        try {
+          const corrections = buildCorrectionInstructions(analyses[0]);
+          const { result: regenerated } = await withFailover(
+            (provider) =>
+              provider.generatePost({
+                topic: parsed.topic,
+                goal: parsed.goal,
+                format: parsed.format,
+                tone: parsed.tone,
+                length: parsed.length,
+                targetAudience: parsed.targetAudience,
+                voiceProfile: voiceProfile as any,
+                userProfile: userProfile as any,
+                recentPosts: allRecentPosts,
+                trendingTopics,
+                contentPillars,
+                dnaProfile: dnaProfile as any,
+                styleContext: {
+                  ...styleCtx,
+                  humanizerBlock: styleCtx.humanizerBlock + corrections,
+                },
+              } as any),
+            (r) =>
+              Array.isArray((r as any)?.versions) &&
+              (r as any).versions.length > 0 &&
+              (r as any).versions.every((v: any) => typeof v?.content === "string" && v.content.trim().length > 0)
           );
+          if (isValidVersions(regenerated?.versions)) result = regenerated;
+        } catch (regenError: any) {
+          console.warn("[Generate] Regeneration failed — keeping first draft:", regenError?.message?.slice(0, 100));
+          regenerations = 0;
         }
+      }
+    }
+
+    // 7.5 Score every version deterministically (always, incl. local generator)
+    for (const version of result.versions) {
+      try {
+        const q = qualityGate(version.content, styleCtx.facts, recentHooksForQuality);
+        version.quality = {
+          specificity: q.specificity,
+          originality: q.originality,
+          clarity: q.clarity,
+          readability: q.readability,
+          aiPatternRisk: q.aiPatternRisk,
+        };
+      } catch {
+        // gate must never block delivery
       }
     }
 

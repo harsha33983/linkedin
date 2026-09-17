@@ -2,8 +2,10 @@ import { NextRequest } from "next/server";
 import { sql } from "@/lib/db";
 import { requireAuthFromRequest } from "@/lib/auth/get-session";
 import { handleApiError, AiGenerationError } from "@/lib/errors/api-errors";
-import { getProvider } from "@/lib/ai/types";
+import { withFailover } from "@/lib/ai/types";
+import { checkRateLimitRedis } from "@/lib/rate-limit/redis-limiter";
 import type { ActivityProfile } from "@/types";
+import { readPostMetrics } from "@/lib/linkedin/metrics";
 
 /**
  * POST /api/ai/generate-ideas — Generate content ideas from the user's REAL
@@ -22,6 +24,10 @@ import type { ActivityProfile } from "@/types";
 export async function POST(request: NextRequest) {
   try {
     const userId = await requireAuthFromRequest(request);
+    const rl = await checkRateLimitRedis(`ai:ideas:${userId}`, 40, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return Response.json({ success: false, error: "Rate limit exceeded. Please try again later.", resetAt: rl.resetAt }, { status: 429 });
+    }
 
     const [voiceProfile, [userProfile], published, recentGenerations, ideas, perfRow, audRow, trendRow] =
       await Promise.all([
@@ -106,10 +112,11 @@ export async function POST(request: NextRequest) {
     let result;
     let usedFallback = false;
     try {
-      result = await getProvider().generateIdeas(generationParams);
-      if (!Array.isArray(result?.ideas) || result.ideas.length === 0) {
-        throw new Error("AI returned no ideas");
-      }
+      const { result: generated } = await withFailover(
+        (provider) => provider.generateIdeas(generationParams),
+        (r) => Array.isArray((r as any)?.ideas) && (r as any).ideas.length > 0
+      );
+      result = generated;
     } catch (aiError) {
       console.warn(
         "[Ideas] AI generation failed, using activity-aware fallback:",
@@ -146,29 +153,6 @@ export async function POST(request: NextRequest) {
 
 // ─── Activity profile ──────────────────────────────────────────────
 
-function num(v: any): number {
-  const n = typeof v === "number" ? v : Number.parseFloat(v);
-  return Number.isFinite(n) ? n : 0;
-}
-
-/** Extract engagement metrics stored on a post's publishingResponse. */
-function extractMetrics(pub: any): { impressions: number; engagementRate: number } {
-  if (!pub || typeof pub !== "object") return { impressions: 0, engagementRate: 0 };
-  const nested = pub.data && typeof pub.data === "object" ? pub.data : {};
-  const impressions = num(pub.impressions ?? nested.impressions ?? 0);
-  const likes = num(pub.likes ?? nested.likes ?? 0);
-  const comments = num(pub.comments ?? nested.comments ?? 0);
-  const reposts = num(pub.reposts ?? nested.reposts ?? 0);
-  const saves = num(pub.saves ?? nested.saves ?? 0);
-  const er =
-    typeof pub.engagementRate === "number"
-      ? pub.engagementRate
-      : impressions > 0
-      ? (likes + comments + reposts + saves) / impressions
-      : 0;
-  return { impressions, engagementRate: er };
-}
-
 function classifyHook(firstLine: string): string {
   const lower = (firstLine || "").toLowerCase().trim();
   if (lower.startsWith("i ") || lower.startsWith("my ") || lower.startsWith("when i ")) return "personal_story";
@@ -199,8 +183,9 @@ function computeActivityProfile(
     const topic = (post.topic || "").trim();
     const format = (post.format || "").trim() || "Text";
     const hook = classifyHook(firstLine(post.content));
-    const { impressions, engagementRate } = extractMetrics(post.publishingResponse);
-    const hasMetrics = impressions > 0;
+    const m = readPostMetrics(post.publishingResponse);
+    const hasMetrics = m.real; // ONLY real LinkedIn measurements count
+    const { impressions, engagementRate } = m;
 
     if (topic) {
       const s = topicStats.get(topic) || { posts: 0, best: 0, avgSum: 0, measured: 0 };

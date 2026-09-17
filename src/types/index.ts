@@ -179,6 +179,16 @@ export interface GeneratePostParams {
   trendingTopics?: any[];
   contentPillars?: string[];
   dnaProfile?: any; // FullDNAProfile from @/lib/dna
+  /** New-architecture style context: structure + humanizer block + user facts. */
+  styleContext?: {
+    humanizerBlock: string;
+    structureId: string;
+    facts: {
+      whatHappened?: string;
+      whatLearned?: string;
+      result?: string;
+    };
+  };
 }
 
 export interface GeneratePostResult {
@@ -209,6 +219,14 @@ export interface PostVersion {
   imageQuery?: string; // search query for image generation
   imageUrl?: string;   // resolved image URL
   structure?: string;  // e.g. "Hook → Story → Lesson"
+  /** Deterministic quality scores (content-quality engine). */
+  quality?: {
+    specificity: number;
+    originality: number;
+    clarity: number;
+    readability: number;
+    aiPatternRisk: number;
+  };
 }
 
 export interface PerformanceAnalysis {

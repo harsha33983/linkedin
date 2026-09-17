@@ -1,8 +1,13 @@
 /**
- * Mock Auth for Development
+ * Mock Auth for Development — STRICTLY opt-in and non-production.
  *
- * In-memory session + mock user data. No database required.
- * Replace with real Better Auth in production.
+ * SECURITY: This module is only reachable when `USE_MOCK_DB === "true"` AND
+ * `NODE_ENV !== "production"`. When disabled it returns `null` everywhere, so an
+ * attacker cannot forge a `mock_*` session cookie against a real deployment.
+ *
+ * The old behaviour of "reconstructing" a session from an arbitrary token (and
+ * defaulting unknown tokens to MOCK_USER) has been REMOVED — that was a
+ * production authentication bypass (CRITICAL-1).
  */
 
 import { cookies } from "next/headers";
@@ -54,6 +59,16 @@ const MOCK_USERS: Record<string, { user: MockUser; password: string }> = {
 // In-memory sessions
 const sessions = new Map<string, MockSession>();
 
+/**
+ * Mock auth is enabled ONLY when the operator explicitly opts in for local dev:
+ *   USE_MOCK_DB=true  AND  NODE_ENV !== "production"
+ * In every other context it is disabled, so the mock path can never be used to
+ * authenticate against a real deployment.
+ */
+export function isMockAuthEnabled(): boolean {
+  return process.env.USE_MOCK_DB === "true" && process.env.NODE_ENV !== "production";
+}
+
 function createSessionToken(userId?: string): string {
   const rand = Math.random().toString(36).slice(2, 15);
   return userId ? `mock_${Date.now()}_${rand}_${userId}` : `mock_${Date.now()}_${rand}`;
@@ -61,32 +76,12 @@ function createSessionToken(userId?: string): string {
 
 /**
  * Get session by token (for server-side cookie reading).
- * If token is not in memory (cross-process), create a session for it.
+ * Only operates when mock auth is enabled. Unknown tokens return null — the
+ * old "reconstruct from token" and "default to MOCK_USER" behaviour is gone.
  */
 export function getMockSessionByToken(token: string): MockSession | null {
-  // Check in-memory first
-  const existing = sessions.get(token);
-  if (existing) return existing;
-
-  // For dev resilience: if token contains a user ID, reconstruct the session
-  // Token format: mock_<timestamp>_<random>_<userId>
-  if (token.startsWith("mock_")) {
-    const parts = token.split("_");
-    const userId = parts[parts.length - 1];
-    // Check if this is a known mock user
-    for (const entry of Object.values(MOCK_USERS)) {
-      if (entry.user.id === userId) {
-        sessions.set(token, { user: entry.user });
-        return { user: entry.user };
-      }
-    }
-    // Default to first mock user for dev convenience
-    const defaultSession = { user: MOCK_USER };
-    sessions.set(token, defaultSession);
-    return defaultSession;
-  }
-
-  return null;
+  if (!isMockAuthEnabled()) return null;
+  return sessions.get(token) || null;
 }
 
 /**
@@ -102,6 +97,7 @@ export function createMockSession(user: MockUser): string {
  * Get session from cookie.
  */
 export async function getMockSession(): Promise<MockSession | null> {
+  if (!isMockAuthEnabled()) return null;
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get(SESSION_COOKIE)?.value;
@@ -116,6 +112,7 @@ export async function getMockSession(): Promise<MockSession | null> {
  * Get session from a request (for API routes).
  */
 export function getMockSessionFromRequest(request: Request): MockSession | null {
+  if (!isMockAuthEnabled()) return null;
   const cookieHeader = request.headers.get("cookie") || "";
   const match = cookieHeader.match(new RegExp(`${SESSION_COOKIE}=([^;]+)`));
   if (!match) return null;
@@ -123,7 +120,7 @@ export function getMockSessionFromRequest(request: Request): MockSession | null 
 }
 
 /**
- * Authenticate with email/password.
+ * Authenticate with email/password (dev only).
  */
 export function mockLogin(
   email: string,
@@ -142,7 +139,7 @@ export function mockLogin(
 }
 
 /**
- * Sign up a new user.
+ * Sign up a new user (dev only).
  */
 export function mockSignup(
   name: string,
@@ -174,5 +171,9 @@ export function destroyMockSession(token: string): void {
   sessions.delete(token);
 }
 
-// Initialize default session for quick dev access
-createMockSession(MOCK_USER);
+// Initialize a default session for quick dev access (only when enabled).
+// Note: createMockSession itself is harmless (it just writes a Map entry), but
+// keep the guard so the dev-comfort session only exists in dev.
+if (isMockAuthEnabled()) {
+  createMockSession(MOCK_USER);
+}

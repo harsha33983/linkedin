@@ -1,0 +1,410 @@
+INFO:     Started server process [14312]
+INFO:     Waiting for application startup.
+2026-09-17 12:12:20,145 INFO scraper: scraper service starting: mode=scrapling fetch_mode=auto ttl=30min
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8100 (Press CTRL+C to quit)
+2026-09-17 12:13:20,405 INFO scraper.routes: search started keyword='Marketing' days=14 limit=30 mode=scrapling
+2026-09-17 12:13:20,415 INFO scraper.cache: cache miss: viral_posts:marketing:14d
+[2026-09-17 12:13:23] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Marketing> (referer: https://www.google.com/)
+2026-09-17 12:13:23,953 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Marketing> (referer: https://www.google.com/)
+[2026-09-17 12:13:27] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Marketing+insights> (referer: https://www.google.com/)
+2026-09-17 12:13:27,073 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Marketing+insights> (referer: https://www.google.com/)
+[2026-09-17 12:13:30] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Marketing+week> (referer: https://www.google.com/)
+2026-09-17 12:13:30,372 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Marketing+week> (referer: https://www.google.com/)
+2026-09-17 12:13:32,370 INFO scraper.scrapling: engine brave cooling down for 5 min
+[2026-09-17 12:13:43] INFO: Fetched (200) <GET https://www.google.com/search?q=site:linkedin.com/posts/+%22Marketing%22&num=30&hl=en&tbs=qdr:m&sei=HIyraoKeKuXLp84PnsLDwAg> (referer: https://www.google.com/)
+2026-09-17 12:13:43,160 INFO scrapling: Fetched (200) <GET https://www.google.com/search?q=site:linkedin.com/posts/+%22Marketing%22&num=30&hl=en&tbs=qdr:m&sei=HIyraoKeKuXLp84PnsLDwAg> (referer: https://www.google.com/)
+[2026-09-17 12:13:59] INFO: Fetched (200) <GET https://www.google.com/search?q=site:linkedin.com/posts/+Marketing+insights&num=30&hl=en&tbs=qdr:m&sei=I4yrasTwC42Gp84PwfyHyAc> (referer: https://www.google.com/)
+2026-09-17 12:13:59,602 INFO scrapling: Fetched (200) <GET https://www.google.com/search?q=site:linkedin.com/posts/+Marketing+insights&num=30&hl=en&tbs=qdr:m&sei=I4yrasTwC42Gp84PwfyHyAc> (referer: https://www.google.com/)
+[2026-09-17 12:14:06] INFO: Fetched (200) <GET https://www.google.com/search?q=site:linkedin.com/posts/+best+Marketing+posts&num=30&hl=en&tbs=qdr:m&sei=M4yratf4GpCgnesPyLvYoQY> (referer: https://www.google.com/)
+2026-09-17 12:14:06,017 INFO scrapling: Fetched (200) <GET https://www.google.com/search?q=site:linkedin.com/posts/+best+Marketing+posts&num=30&hl=en&tbs=qdr:m&sei=M4yratf4GpCgnesPyLvYoQY> (referer: https://www.google.com/)
+[2026-09-17 12:14:12] INFO: Fetched (200) <GET https://www.google.com/search?q=site:linkedin.com/pulse/+Marketing&num=30&hl=en&tbs=qdr:m&sei=OoyrapqgAq7fwN4PlqTDyQM> (referer: https://www.google.com/)
+2026-09-17 12:14:12,117 INFO scrapling: Fetched (200) <GET https://www.google.com/search?q=site:linkedin.com/pulse/+Marketing&num=30&hl=en&tbs=qdr:m&sei=OoyrapqgAq7fwN4PlqTDyQM> (referer: https://www.google.com/)
+[2026-09-17 12:14:14] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+%22Marketing%22&df=m> (referer: https://www.google.com/)
+2026-09-17 12:14:14,929 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+%22Marketing%22&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:14:17] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+Marketing+insights&df=m> (referer: https://www.google.com/)
+2026-09-17 12:14:17,096 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+Marketing+insights&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:14:19] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+best+Marketing+posts&df=m> (referer: https://www.google.com/)
+2026-09-17 12:14:19,239 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+best+Marketing+posts&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:14:21] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/pulse/+Marketing&df=m> (referer: https://www.google.com/)
+2026-09-17 12:14:21,395 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/pulse/+Marketing&df=m> (referer: https://www.google.com/)
+2026-09-17 12:14:25,834 INFO scraper.scrapling: discovered 6 unique post URLs for keyword='Marketing' (window 14d)
+2026-09-17 12:14:25,834 INFO scraper.search: scrapling search started keyword='Marketing' \u2192 6 urls
+[2026-09-17 12:14:27] INFO: Fetched (404) <GET https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-influencer-marketing-activity-7504482144250032129-imGc%5Cu0026cs%5Cu003d1%5Cu0026ctx%5Cu003div%5Cu0026hl%5Cu003den-IN> (referer: https://www.google.com/)
+2026-09-17 12:14:27,072 INFO scrapling: Fetched (404) <GET https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-influencer-marketing-activity-7504482144250032129-imGc%5Cu0026cs%5Cu003d1%5Cu0026ctx%5Cu003div%5Cu0026hl%5Cu003den-IN> (referer: https://www.google.com/)
+2026-09-17 12:14:27,103 INFO scraper.scrapling: no data extracted: https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-infl
+2026-09-17 12:14:27,103 INFO scraper.scrapling: escalating to StealthyFetcher: https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-infl
+[2026-09-17 12:14:27] INFO: Fetched (200) <GET https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just-need-to-see-the-activity-7501187500493930497-22yS> (referer: https://www.google.com/)
+2026-09-17 12:14:27,390 INFO scrapling: Fetched (200) <GET https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just-need-to-see-the-activity-7501187500493930497-22yS> (referer: https://www.google.com/)
+[2026-09-17 12:14:27] INFO: Fetched (200) <GET https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-influencer-marketing-activity-7504482144250032129-imGc> (referer: https://www.google.com/)
+2026-09-17 12:14:27,572 INFO scrapling: Fetched (200) <GET https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-influencer-marketing-activity-7504482144250032129-imGc> (referer: https://www.google.com/)
+[2026-09-17 12:14:28] INFO: Fetched (404) <GET https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just-need-to-see-the-activity-7501187500493930497-22yS%5Cu0026cs%5Cu003d1%5Cu0026ctx%5Cu003div%5Cu0026hl%5Cu003den-IN> (referer: https://www.google.com/)
+2026-09-17 12:14:28,562 INFO scrapling: Fetched (404) <GET https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just-need-to-see-the-activity-7501187500493930497-22yS%5Cu0026cs%5Cu003d1%5Cu0026ctx%5Cu003div%5Cu0026hl%5Cu003den-IN> (referer: https://www.google.com/)
+2026-09-17 12:14:28,580 INFO scraper.scrapling: no data extracted: https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just
+2026-09-17 12:14:28,581 INFO scraper.scrapling: escalating to StealthyFetcher: https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just
+[2026-09-17 12:14:29] INFO: Fetched (200) <GET https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-hertechtrail-womenintech-activity-7501956904533860353-FOHa> (referer: https://www.google.com/)
+2026-09-17 12:14:29,347 INFO scrapling: Fetched (200) <GET https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-hertechtrail-womenintech-activity-7501956904533860353-FOHa> (referer: https://www.google.com/)
+[2026-09-17 12:14:29] INFO: Fetched (404) <GET https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-influencer-marketing-activity-7504482144250032129-imGc/u0026cs/u003d1/u0026ctx/u003div/u0026hl/u003den-IN?_l=en_US> (referer: https://www.google.com/)
+2026-09-17 12:14:29,353 INFO scrapling: Fetched (404) <GET https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-influencer-marketing-activity-7504482144250032129-imGc/u0026cs/u003d1/u0026ctx/u003div/u0026hl/u003den-IN?_l=en_US> (referer: https://www.google.com/)
+2026-09-17 12:14:29,996 INFO scraper.scrapling: no data extracted: https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-infl
+2026-09-17 12:14:30,023 INFO scraper.scrapling: scrapling extraction produced no data: https://www.linkedin.com/posts/avishi-mishra-5b0a69284_is-it-possible-to-do-infl
+[2026-09-17 12:14:30] INFO: Fetched (404) <GET https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-hertechtrail-womenintech-activity-7501956904533860353-FOHa%5Cu0026cs%5Cu003d1%5Cu0026ctx%5Cu003div%5Cu0026hl%5Cu003den-IN> (referer: https://www.google.com/)
+2026-09-17 12:14:30,638 INFO scrapling: Fetched (404) <GET https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-hertechtrail-womenintech-activity-7501956904533860353-FOHa%5Cu0026cs%5Cu003d1%5Cu0026ctx%5Cu003div%5Cu0026hl%5Cu003den-IN> (referer: https://www.google.com/)
+2026-09-17 12:14:30,668 INFO scraper.scrapling: no data extracted: https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-he
+2026-09-17 12:14:30,670 INFO scraper.scrapling: escalating to StealthyFetcher: https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-he
+[2026-09-17 12:14:30] INFO: Fetched (404) <GET https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just-need-to-see-the-activity-7501187500493930497-22yS/u0026cs/u003d1/u0026ctx/u003div/u0026hl/u003den-IN?_l=en_US> (referer: https://www.google.com/)
+2026-09-17 12:14:30,924 INFO scrapling: Fetched (404) <GET https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just-need-to-see-the-activity-7501187500493930497-22yS/u0026cs/u003d1/u0026ctx/u003div/u0026hl/u003den-IN?_l=en_US> (referer: https://www.google.com/)
+2026-09-17 12:14:31,414 INFO scraper.scrapling: no data extracted: https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just
+2026-09-17 12:14:31,425 INFO scraper.scrapling: scrapling extraction produced no data: https://www.linkedin.com/posts/celine-okemwa-0aa964208_part-1-sometimes-you-just
+[2026-09-17 12:14:33] INFO: Fetched (404) <GET https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-hertechtrail-womenintech-activity-7501956904533860353-FOHa/u0026cs/u003d1/u0026ctx/u003div/u0026hl/u003den-IN?_l=en_US> (referer: https://www.google.com/)
+2026-09-17 12:14:33,057 INFO scrapling: Fetched (404) <GET https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-hertechtrail-womenintech-activity-7501956904533860353-FOHa/u0026cs/u003d1/u0026ctx/u003div/u0026hl/u003den-IN?_l=en_US> (referer: https://www.google.com/)
+2026-09-17 12:14:33,577 INFO scraper.scrapling: no data extracted: https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-he
+2026-09-17 12:14:33,584 INFO scraper.scrapling: scrapling extraction produced no data: https://www.linkedin.com/posts/esther-owolabi-23622b275_10daycontentchallenge-he
+2026-09-17 12:14:33,584 INFO scraper.cache: cache set: viral_posts:marketing:14d
+2026-09-17 12:14:33,584 INFO scraper.routes: search completed keyword='Marketing' found=6 extracted=3 failed=3 status=ok
+2026-09-17 12:15:38,341 INFO scraper.routes: search started keyword='Startups' days=14 limit=30 mode=scrapling
+2026-09-17 12:15:38,353 INFO scraper.cache: cache miss: viral_posts:startups:14d
+2026-09-17 12:15:38,353 INFO scraper.scrapling: skipping engine brave (cooldown)
+[2026-09-17 12:15:41] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+%22Startups%22&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:15:41,492 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+%22Startups%22&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:15:41] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2B%2522Startups%2522%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGJOZrtUGIjAqECHxxuBZ9yqXAK_dDPLS2kOPOM7i-HyD0H-nnnVMQMrgVQYmvobu5HDNeDLbZxYyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:15:41,530 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2B%2522Startups%2522%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGJOZrtUGIjAqECHxxuBZ9yqXAK_dDPLS2kOPOM7i-HyD0H-nnnVMQMrgVQYmvobu5HDNeDLbZxYyAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:15:47] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+Startups+insights&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:15:47,132 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+Startups+insights&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:15:47] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2BStartups%2Binsights%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGJmZrtUGIjAwmACPOKANljdxQIUXJxaw3M9up_nGa41ru8mfGk-BfOjSvJIw6W7SGwOG-h84S54yAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:15:47,172 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2BStartups%2Binsights%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGJmZrtUGIjAwmACPOKANljdxQIUXJxaw3M9up_nGa41ru8mfGk-BfOjSvJIw6W7SGwOG-h84S54yAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:15:52] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+best+Startups+posts&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:15:52,674 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+best+Startups+posts&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:15:52] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2Bbest%2BStartups%2Bposts%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGJ-ZrtUGIjAHpjPUBZv9TrD9u_FDJtAXBmvMng61ien0VxGpSQDeuAQs429q9qgUSQXoW2-WyYgyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:15:52,713 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2Bbest%2BStartups%2Bposts%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGJ-ZrtUGIjAHpjPUBZv9TrD9u_FDJtAXBmvMng61ien0VxGpSQDeuAQs429q9qgUSQXoW2-WyYgyAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:15:58] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/pulse/+Startups&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:15:58,985 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/pulse/+Startups&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:15:59] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/pulse/%2BStartups%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGKWZrtUGIjCH9EBCs0cjKzAxsZ0RWdzYai4NUPBcq-IhykZ-62dWyFdO-_4lPKlHGtGPwv7iIboyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:15:59,017 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/pulse/%2BStartups%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGKWZrtUGIjCH9EBCs0cjKzAxsZ0RWdzYai4NUPBcq-IhykZ-62dWyFdO-_4lPKlHGtGPwv7iIboyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:16:01,450 INFO scraper.scrapling: engine google cooling down for 5 min
+[2026-09-17 12:16:01] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+%22Startups%22&df=m> (referer: https://www.google.com/)
+2026-09-17 12:16:01,632 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+%22Startups%22&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:16:03] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+Startups+insights&df=m> (referer: https://www.google.com/)
+2026-09-17 12:16:03,834 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+Startups+insights&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:16:06] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+best+Startups+posts&df=m> (referer: https://www.google.com/)
+2026-09-17 12:16:06,024 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+best+Startups+posts&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:16:08] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/pulse/+Startups&df=m> (referer: https://www.google.com/)
+2026-09-17 12:16:08,219 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/pulse/+Startups&df=m> (referer: https://www.google.com/)
+2026-09-17 12:16:10,237 INFO scraper.scrapling: engine ddg cooling down for 5 min
+2026-09-17 12:16:10,301 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Startups' (window 14d)
+2026-09-17 12:16:10,301 INFO scraper.search: scrapling search started keyword='Startups' \u2192 0 urls
+2026-09-17 12:16:10,301 INFO scraper.routes: search completed keyword='Startups' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:17:11,830 INFO scraper.routes: search started keyword='Career' days=14 limit=30 mode=scrapling
+2026-09-17 12:17:11,830 INFO scraper.cache: cache miss: viral_posts:career:14d
+2026-09-17 12:17:11,830 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:17:12] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career> (referer: https://www.google.com/)
+2026-09-17 12:17:12,906 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career> (referer: https://www.google.com/)
+[2026-09-17 12:17:15] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+insights> (referer: https://www.google.com/)
+2026-09-17 12:17:15,999 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+insights> (referer: https://www.google.com/)
+[2026-09-17 12:17:19] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+week> (referer: https://www.google.com/)
+2026-09-17 12:17:19,057 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+week> (referer: https://www.google.com/)
+2026-09-17 12:17:21,095 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:17:21,111 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:17:21,154 INFO scraper.scrapling: discovered 1 unique post URLs for keyword='Career' (window 14d)
+2026-09-17 12:17:21,154 INFO scraper.search: scrapling search started keyword='Career' \u2192 1 urls
+[2026-09-17 12:17:22] INFO: Fetched (200) <GET https://www.linkedin.com/top-content/> (referer: https://www.google.com/)
+2026-09-17 12:17:22,876 INFO scrapling: Fetched (200) <GET https://www.linkedin.com/top-content/> (referer: https://www.google.com/)
+2026-09-17 12:17:22,893 INFO scraper.scrapling: no data extracted: https://www.linkedin.com/pulse/topics/home/
+2026-09-17 12:17:22,904 INFO scraper.scrapling: escalating to StealthyFetcher: https://www.linkedin.com/pulse/topics/home/
+[2026-09-17 12:17:25] INFO: Fetched (301) <GET https://www.linkedin.com/pulse/topics/home/> (referer: https://www.google.com/)
+2026-09-17 12:17:25,569 INFO scrapling: Fetched (301) <GET https://www.linkedin.com/pulse/topics/home/> (referer: https://www.google.com/)
+[2026-09-17 12:17:25] INFO: Fetched (200) <GET https://www.linkedin.com/top-content/> (referer: https://www.google.com/)
+2026-09-17 12:17:25,688 INFO scrapling: Fetched (200) <GET https://www.linkedin.com/top-content/> (referer: https://www.google.com/)
+2026-09-17 12:17:26,178 INFO scraper.scrapling: no data extracted: https://www.linkedin.com/pulse/topics/home/
+2026-09-17 12:17:26,185 INFO scraper.scrapling: scrapling extraction produced no data: https://www.linkedin.com/pulse/topics/home/
+2026-09-17 12:17:26,185 INFO scraper.routes: search completed keyword='Career' found=1 extracted=0 failed=1 status=ok
+2026-09-17 12:18:26,928 INFO scraper.routes: search started keyword='Leadership' days=14 limit=30 mode=scrapling
+2026-09-17 12:18:26,929 INFO scraper.cache: cache miss: viral_posts:leadership:14d
+[2026-09-17 12:18:28] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership> (referer: https://www.google.com/)
+2026-09-17 12:18:28,119 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership> (referer: https://www.google.com/)
+[2026-09-17 12:18:30] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+insights> (referer: https://www.google.com/)
+2026-09-17 12:18:30,915 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+insights> (referer: https://www.google.com/)
+[2026-09-17 12:18:33] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+week> (referer: https://www.google.com/)
+2026-09-17 12:18:33,684 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+week> (referer: https://www.google.com/)
+2026-09-17 12:18:35,716 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:18:35,724 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:18:35,724 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:18:35,842 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Leadership' (window 14d)
+2026-09-17 12:18:35,849 INFO scraper.search: scrapling search started keyword='Leadership' \u2192 0 urls
+2026-09-17 12:18:35,849 INFO scraper.routes: search completed keyword='Leadership' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:19:37,305 INFO scraper.routes: search started keyword='Productivity' days=14 limit=30 mode=scrapling
+2026-09-17 12:19:37,320 INFO scraper.cache: cache miss: viral_posts:productivity:14d
+2026-09-17 12:19:37,320 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:19:38] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity> (referer: https://www.google.com/)
+2026-09-17 12:19:38,191 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity> (referer: https://www.google.com/)
+[2026-09-17 12:19:40] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+insights> (referer: https://www.google.com/)
+2026-09-17 12:19:40,937 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+insights> (referer: https://www.google.com/)
+[2026-09-17 12:19:43] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+week> (referer: https://www.google.com/)
+2026-09-17 12:19:43,600 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+week> (referer: https://www.google.com/)
+2026-09-17 12:19:45,635 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:19:45,645 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:19:45,645 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:19:45,691 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Productivity' (window 14d)
+2026-09-17 12:19:45,692 INFO scraper.search: scrapling search started keyword='Productivity' \u2192 0 urls
+2026-09-17 12:19:45,692 INFO scraper.routes: search completed keyword='Productivity' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:34:10,766 INFO scraper.routes: search started keyword='AI' days=14 limit=30 mode=scrapling
+2026-09-17 12:34:10,766 INFO scraper.cache: cache miss: viral_posts:ai:14d
+[2026-09-17 12:34:11] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI> (referer: https://www.google.com/)
+2026-09-17 12:34:11,798 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI> (referer: https://www.google.com/)
+[2026-09-17 12:34:14] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+insights> (referer: https://www.google.com/)
+2026-09-17 12:34:14,611 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+insights> (referer: https://www.google.com/)
+[2026-09-17 12:34:17] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+week> (referer: https://www.google.com/)
+2026-09-17 12:34:17,466 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+week> (referer: https://www.google.com/)
+2026-09-17 12:34:19,494 INFO scraper.scrapling: engine brave cooling down for 5 min
+[2026-09-17 12:34:22] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+%22AI%22&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:34:22,090 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+%22AI%22&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:34:22] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2B%2522AI%2522%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGPShrtUGIjBjF3taXuXG3dynHENfEAE2MVY5qJjhy-ZuvoIaQuLxbOXGwtqNQrJQFq_NFHbcAPcyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:34:22,107 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2B%2522AI%2522%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGPShrtUGIjBjF3taXuXG3dynHENfEAE2MVY5qJjhy-ZuvoIaQuLxbOXGwtqNQrJQFq_NFHbcAPcyAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:34:26] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+AI+insights&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:34:26,830 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+AI+insights&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:34:26] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2BAI%2Binsights%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGPmhrtUGIjAFGFnYSS9KJk0QYxtdZaveQQwhaRuPZ6aRJsSsso4VGsMC3NvzT84ZYbtdfLM382EyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:34:26,849 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2BAI%2Binsights%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGPmhrtUGIjAFGFnYSS9KJk0QYxtdZaveQQwhaRuPZ6aRJsSsso4VGsMC3NvzT84ZYbtdfLM382EyAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:34:32] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+best+AI+posts&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:34:32,245 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+best+AI+posts&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:34:32] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2Bbest%2BAI%2Bposts%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGP6hrtUGIjBSrUOmKN84xzAtp0qDKahLR37djB5Q0lLbPRY01inicxZNfHcHVNR6SZDJQ64J580yAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:34:32,259 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2Bbest%2BAI%2Bposts%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGP6hrtUGIjBSrUOmKN84xzAtp0qDKahLR37djB5Q0lLbPRY01inicxZNfHcHVNR6SZDJQ64J580yAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:34:37] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/pulse/+AI&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:34:37,007 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/pulse/+AI&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:34:37] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/pulse/%2BAI%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGIOirtUGIjDlQA8uGxL8h1vZ9-mRgDi10v-XgdlxmNpE1I8QQ6WuCqjelkd-lWLb2idmmUIrNecyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:34:37,027 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/pulse/%2BAI%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGIOirtUGIjDlQA8uGxL8h1vZ9-mRgDi10v-XgdlxmNpE1I8QQ6WuCqjelkd-lWLb2idmmUIrNecyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:34:39,306 INFO scraper.scrapling: engine google cooling down for 5 min
+[2026-09-17 12:34:39] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+%22AI%22&df=m> (referer: https://www.google.com/)
+2026-09-17 12:34:39,578 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+%22AI%22&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:34:41] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+AI+insights&df=m> (referer: https://www.google.com/)
+2026-09-17 12:34:41,744 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+AI+insights&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:34:43] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+best+AI+posts&df=m> (referer: https://www.google.com/)
+2026-09-17 12:34:43,907 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+best+AI+posts&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:34:46] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/pulse/+AI&df=m> (referer: https://www.google.com/)
+2026-09-17 12:34:46,184 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/pulse/+AI&df=m> (referer: https://www.google.com/)
+2026-09-17 12:34:48,186 INFO scraper.scrapling: engine ddg cooling down for 5 min
+2026-09-17 12:34:48,223 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='AI' (window 14d)
+2026-09-17 12:34:48,223 INFO scraper.search: scrapling search started keyword='AI' \u2192 0 urls
+2026-09-17 12:34:48,223 INFO scraper.routes: search completed keyword='AI' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:35:29,287 INFO scraper.routes: search started keyword='Career' days=14 limit=30 mode=scrapling
+2026-09-17 12:35:29,295 INFO scraper.cache: cache miss: viral_posts:career:14d
+2026-09-17 12:35:29,295 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:35:30] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career> (referer: https://www.google.com/)
+2026-09-17 12:35:30,226 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career> (referer: https://www.google.com/)
+[2026-09-17 12:35:32] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+insights> (referer: https://www.google.com/)
+2026-09-17 12:35:32,911 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+insights> (referer: https://www.google.com/)
+[2026-09-17 12:35:35] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+week> (referer: https://www.google.com/)
+2026-09-17 12:35:35,656 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+week> (referer: https://www.google.com/)
+2026-09-17 12:35:37,673 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:35:37,686 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:35:37,687 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:35:37,724 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Career' (window 14d)
+2026-09-17 12:35:37,724 INFO scraper.search: scrapling search started keyword='Career' \u2192 0 urls
+2026-09-17 12:35:37,724 INFO scraper.routes: search completed keyword='Career' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:35:45,314 INFO scraper.routes: search started keyword='Startups' days=14 limit=30 mode=scrapling
+2026-09-17 12:35:45,324 INFO scraper.cache: cache miss: viral_posts:startups:14d
+2026-09-17 12:35:45,326 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:35:46] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups> (referer: https://www.google.com/)
+2026-09-17 12:35:46,029 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups> (referer: https://www.google.com/)
+[2026-09-17 12:35:48] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups+insights> (referer: https://www.google.com/)
+2026-09-17 12:35:48,694 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups+insights> (referer: https://www.google.com/)
+[2026-09-17 12:35:51] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups+week> (referer: https://www.google.com/)
+2026-09-17 12:35:51,379 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups+week> (referer: https://www.google.com/)
+2026-09-17 12:35:53,405 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:35:53,418 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:35:53,418 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:35:53,460 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Startups' (window 14d)
+2026-09-17 12:35:53,460 INFO scraper.search: scrapling search started keyword='Startups' \u2192 0 urls
+2026-09-17 12:35:53,460 INFO scraper.routes: search completed keyword='Startups' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:37:52,850 INFO scraper.routes: search started keyword='Career' days=14 limit=30 mode=scrapling
+2026-09-17 12:37:52,864 INFO scraper.cache: cache miss: viral_posts:career:14d
+2026-09-17 12:37:52,864 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:37:53] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career> (referer: https://www.google.com/)
+2026-09-17 12:37:53,620 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career> (referer: https://www.google.com/)
+[2026-09-17 12:37:56] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+insights> (referer: https://www.google.com/)
+2026-09-17 12:37:56,331 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+insights> (referer: https://www.google.com/)
+2026-09-17 12:37:58,897 INFO scraper.routes: search started keyword='Leadership' days=14 limit=30 mode=scrapling
+2026-09-17 12:37:58,909 INFO scraper.cache: cache miss: viral_posts:leadership:14d
+[2026-09-17 12:37:58] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+week> (referer: https://www.google.com/)
+2026-09-17 12:37:58,997 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Career+week> (referer: https://www.google.com/)
+[2026-09-17 12:37:59] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership> (referer: https://www.google.com/)
+2026-09-17 12:37:59,575 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership> (referer: https://www.google.com/)
+2026-09-17 12:38:00,996 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:38:01,007 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:38:01,008 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:38:01,037 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Career' (window 14d)
+2026-09-17 12:38:01,038 INFO scraper.search: scrapling search started keyword='Career' \u2192 0 urls
+2026-09-17 12:38:01,038 INFO scraper.routes: search completed keyword='Career' found=0 extracted=0 failed=0 status=temporarily_unavailable
+[2026-09-17 12:38:02] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+insights> (referer: https://www.google.com/)
+2026-09-17 12:38:02,207 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+insights> (referer: https://www.google.com/)
+2026-09-17 12:38:02,508 INFO scraper.routes: search started keyword='Productivity' days=14 limit=30 mode=scrapling
+2026-09-17 12:38:02,519 INFO scraper.cache: cache miss: viral_posts:productivity:14d
+2026-09-17 12:38:02,520 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:38:03] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity> (referer: https://www.google.com/)
+2026-09-17 12:38:03,181 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity> (referer: https://www.google.com/)
+[2026-09-17 12:38:04] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+week> (referer: https://www.google.com/)
+2026-09-17 12:38:04,830 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+week> (referer: https://www.google.com/)
+[2026-09-17 12:38:05] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+insights> (referer: https://www.google.com/)
+2026-09-17 12:38:05,822 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+insights> (referer: https://www.google.com/)
+2026-09-17 12:38:06,845 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:38:06,847 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:38:06,847 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:38:06,890 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Leadership' (window 14d)
+2026-09-17 12:38:06,891 INFO scraper.search: scrapling search started keyword='Leadership' \u2192 0 urls
+2026-09-17 12:38:06,892 INFO scraper.routes: search completed keyword='Leadership' found=0 extracted=0 failed=0 status=temporarily_unavailable
+[2026-09-17 12:38:08] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+week> (referer: https://www.google.com/)
+2026-09-17 12:38:08,479 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+week> (referer: https://www.google.com/)
+2026-09-17 12:38:10,141 INFO scraper.routes: search started keyword='AI' days=14 limit=30 mode=scrapling
+2026-09-17 12:38:10,149 INFO scraper.cache: cache miss: viral_posts:ai:14d
+2026-09-17 12:38:10,149 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+2026-09-17 12:38:10,491 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:38:10,503 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:38:10,503 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:38:10,536 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Productivity' (window 14d)
+2026-09-17 12:38:10,536 INFO scraper.search: scrapling search started keyword='Productivity' \u2192 0 urls
+2026-09-17 12:38:10,536 INFO scraper.routes: search completed keyword='Productivity' found=0 extracted=0 failed=0 status=temporarily_unavailable
+[2026-09-17 12:38:10] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI> (referer: https://www.google.com/)
+2026-09-17 12:38:10,791 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI> (referer: https://www.google.com/)
+[2026-09-17 12:38:13] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+insights> (referer: https://www.google.com/)
+2026-09-17 12:38:13,441 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+insights> (referer: https://www.google.com/)
+[2026-09-17 12:38:16] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+week> (referer: https://www.google.com/)
+2026-09-17 12:38:16,121 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+week> (referer: https://www.google.com/)
+2026-09-17 12:38:18,141 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:38:18,150 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:38:18,154 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:38:18,187 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='AI' (window 14d)
+2026-09-17 12:38:18,187 INFO scraper.search: scrapling search started keyword='AI' \u2192 0 urls
+2026-09-17 12:38:18,187 INFO scraper.routes: search completed keyword='AI' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:41:41,872 INFO scraper.routes: search started keyword='AI' days=14 limit=30 mode=scrapling
+2026-09-17 12:41:41,872 INFO scraper.cache: cache miss: viral_posts:ai:14d
+2026-09-17 12:41:41,872 INFO scraper.scrapling: skipping engine brave (cooldown)
+[2026-09-17 12:41:45] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+%22AI%22&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:41:45,259 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+%22AI%22&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:41:45] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2B%2522AI%2522%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGK-lrtUGIjCozWOv0VYdOqTQ6wUJoiCLrX4yTo69MeKB9KCyH251m-m_1ejMhsvUCVhgQD6W5F0yAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:41:45,272 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2B%2522AI%2522%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGK-lrtUGIjCozWOv0VYdOqTQ6wUJoiCLrX4yTo69MeKB9KCyH251m-m_1ejMhsvUCVhgQD6W5F0yAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:41:49] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+AI+insights&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:41:49,911 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/posts/+AI+insights&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:41:49] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2BAI%2Binsights%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGLSlrtUGIjAynoYGR94ajx8yEsxHNGSYOrPB7cpVsaQM_zelhRe4tgeMl-lVBGxVwIZioDcEee4yAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:41:49,922 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2BAI%2Binsights%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGLSlrtUGIjAynoYGR94ajx8yEsxHNGSYOrPB7cpVsaQM_zelhRe4tgeMl-lVBGxVwIZioDcEee4yAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:41:55] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2Bbest%2BAI%2Bposts%26num%3D30%26hl%3Den%26tbs%3Dqdr:m%26sei%3DuZKrapK-GLOCm9cP3KetwAU&hl=en&q=EgRneD0WGLmlrtUGIjC_whbwq2Dl1FjQxJCuV-7Hu1gGWeUtB5ylMjtdH2G0Uaks32lIAtCdkXzCeL39avwyAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:41:55,075 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/posts/%2Bbest%2BAI%2Bposts%26num%3D30%26hl%3Den%26tbs%3Dqdr:m%26sei%3DuZKrapK-GLOCm9cP3KetwAU&hl=en&q=EgRneD0WGLmlrtUGIjC_whbwq2Dl1FjQxJCuV-7Hu1gGWeUtB5ylMjtdH2G0Uaks32lIAtCdkXzCeL39avwyAnJSWgFD> (referer: https://www.google.com/)
+[2026-09-17 12:42:00] INFO: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/pulse/+AI&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+2026-09-17 12:42:00,344 INFO scrapling: Fetched (302) <GET https://www.google.com/search?q=site:linkedin.com/pulse/+AI&num=30&hl=en&tbs=qdr:m> (referer: https://www.google.com/)
+[2026-09-17 12:42:00] INFO: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/pulse/%2BAI%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGL6lrtUGIjBY8020BL_4FmaTGvPpWvXuTf3OxzxcTlv4nqyEI50HB_jrWrs7PPtL2FG3OYrird4yAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:42:00,362 INFO scrapling: Fetched (429) <GET https://www.google.com/sorry/index?continue=https://www.google.com/search%3Fq%3Dsite:linkedin.com/pulse/%2BAI%26num%3D30%26hl%3Den%26tbs%3Dqdr:m&hl=en&q=EgRneD0WGL6lrtUGIjBY8020BL_4FmaTGvPpWvXuTf3OxzxcTlv4nqyEI50HB_jrWrs7PPtL2FG3OYrird4yAnJSWgFD> (referer: https://www.google.com/)
+2026-09-17 12:42:02,654 INFO scraper.scrapling: engine google cooling down for 5 min
+[2026-09-17 12:42:03] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+%22AI%22&df=m> (referer: https://www.google.com/)
+2026-09-17 12:42:03,072 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+%22AI%22&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:42:05] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+AI+insights&df=m> (referer: https://www.google.com/)
+2026-09-17 12:42:05,240 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+AI+insights&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:42:07] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+best+AI+posts&df=m> (referer: https://www.google.com/)
+2026-09-17 12:42:07,392 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/posts/+best+AI+posts&df=m> (referer: https://www.google.com/)
+[2026-09-17 12:42:09] INFO: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/pulse/+AI&df=m> (referer: https://www.google.com/)
+2026-09-17 12:42:09,559 INFO scrapling: Fetched (202) <GET https://html.duckduckgo.com/html/?q=site:linkedin.com/pulse/+AI&df=m> (referer: https://www.google.com/)
+2026-09-17 12:42:11,573 INFO scraper.scrapling: engine ddg cooling down for 5 min
+2026-09-17 12:42:11,609 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='AI' (window 14d)
+2026-09-17 12:42:11,609 INFO scraper.search: scrapling search started keyword='AI' \u2192 0 urls
+2026-09-17 12:42:11,609 INFO scraper.routes: search completed keyword='AI' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:42:14,332 INFO scraper.routes: search started keyword='AI' days=14 limit=30 mode=scrapling
+2026-09-17 12:42:14,333 INFO scraper.cache: cache miss: viral_posts:ai:14d
+2026-09-17 12:42:14,333 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:42:15] INFO: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI> (referer: https://www.google.com/)
+2026-09-17 12:42:15,257 INFO scrapling: Fetched (200) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI> (referer: https://www.google.com/)
+[2026-09-17 12:42:17] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+insights> (referer: https://www.google.com/)
+2026-09-17 12:42:17,989 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+insights> (referer: https://www.google.com/)
+[2026-09-17 12:42:20] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+week> (referer: https://www.google.com/)
+2026-09-17 12:42:20,628 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+AI+week> (referer: https://www.google.com/)
+2026-09-17 12:42:22,641 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:42:22,649 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:42:22,649 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:42:22,688 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='AI' (window 14d)
+2026-09-17 12:42:22,688 INFO scraper.search: scrapling search started keyword='AI' \u2192 0 urls
+2026-09-17 12:42:22,688 INFO scraper.routes: search completed keyword='AI' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:43:01,582 INFO scraper.routes: search started keyword='gemini' days=14 limit=30 mode=scrapling
+2026-09-17 12:43:01,586 INFO scraper.cache: cache miss: viral_posts:gemini:14d
+2026-09-17 12:43:01,588 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:43:02] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+gemini> (referer: https://www.google.com/)
+2026-09-17 12:43:02,274 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+gemini> (referer: https://www.google.com/)
+[2026-09-17 12:43:04] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+gemini+insights> (referer: https://www.google.com/)
+2026-09-17 12:43:04,930 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+gemini+insights> (referer: https://www.google.com/)
+[2026-09-17 12:43:07] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+gemini+week> (referer: https://www.google.com/)
+2026-09-17 12:43:07,573 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+gemini+week> (referer: https://www.google.com/)
+2026-09-17 12:43:09,576 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:43:09,583 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:43:09,588 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:43:09,631 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='gemini' (window 14d)
+2026-09-17 12:43:09,631 INFO scraper.search: scrapling search started keyword='gemini' \u2192 0 urls
+2026-09-17 12:43:09,631 INFO scraper.routes: search completed keyword='gemini' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:43:45,404 INFO scraper.routes: search started keyword='open ai' days=14 limit=30 mode=scrapling
+2026-09-17 12:43:45,405 INFO scraper.cache: cache miss: viral_posts:open ai:14d
+2026-09-17 12:43:45,405 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:43:46] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+open+ai> (referer: https://www.google.com/)
+2026-09-17 12:43:46,125 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+open+ai> (referer: https://www.google.com/)
+[2026-09-17 12:43:48] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+open+ai+insights> (referer: https://www.google.com/)
+2026-09-17 12:43:48,826 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+open+ai+insights> (referer: https://www.google.com/)
+[2026-09-17 12:43:51] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+open+ai+week> (referer: https://www.google.com/)
+2026-09-17 12:43:51,446 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+open+ai+week> (referer: https://www.google.com/)
+2026-09-17 12:43:53,473 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:43:53,481 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:43:53,481 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:43:53,522 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='open ai' (window 14d)
+2026-09-17 12:43:53,522 INFO scraper.search: scrapling search started keyword='open ai' \u2192 0 urls
+2026-09-17 12:43:53,522 INFO scraper.routes: search completed keyword='open ai' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:44:28,421 INFO scraper.routes: search started keyword='Startups' days=14 limit=30 mode=scrapling
+2026-09-17 12:44:28,431 INFO scraper.cache: cache miss: viral_posts:startups:14d
+2026-09-17 12:44:28,431 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:44:29] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups> (referer: https://www.google.com/)
+2026-09-17 12:44:29,117 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups> (referer: https://www.google.com/)
+[2026-09-17 12:44:31] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups+insights> (referer: https://www.google.com/)
+2026-09-17 12:44:31,790 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups+insights> (referer: https://www.google.com/)
+[2026-09-17 12:44:34] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups+week> (referer: https://www.google.com/)
+2026-09-17 12:44:34,419 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Startups+week> (referer: https://www.google.com/)
+2026-09-17 12:44:36,442 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:44:36,452 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:44:36,453 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:44:36,497 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Startups' (window 14d)
+2026-09-17 12:44:36,497 INFO scraper.search: scrapling search started keyword='Startups' \u2192 0 urls
+2026-09-17 12:44:36,497 INFO scraper.routes: search completed keyword='Startups' found=0 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-17 12:46:23,260 INFO scraper.routes: search started keyword='Leadership' days=14 limit=30 mode=scrapling
+2026-09-17 12:46:23,272 INFO scraper.cache: cache miss: viral_posts:leadership:14d
+2026-09-17 12:46:23,272 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:46:24] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership> (referer: https://www.google.com/)
+2026-09-17 12:46:24,055 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership> (referer: https://www.google.com/)
+[2026-09-17 12:46:26] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+insights> (referer: https://www.google.com/)
+2026-09-17 12:46:26,697 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+insights> (referer: https://www.google.com/)
+2026-09-17 12:46:26,993 INFO scraper.routes: search started keyword='Productivity' days=14 limit=30 mode=scrapling
+2026-09-17 12:46:27,005 INFO scraper.cache: cache miss: viral_posts:productivity:14d
+[2026-09-17 12:46:27] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity> (referer: https://www.google.com/)
+2026-09-17 12:46:27,622 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity> (referer: https://www.google.com/)
+[2026-09-17 12:46:29] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+week> (referer: https://www.google.com/)
+2026-09-17 12:46:29,377 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Leadership+week> (referer: https://www.google.com/)
+[2026-09-17 12:46:30] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+insights> (referer: https://www.google.com/)
+2026-09-17 12:46:30,304 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+insights> (referer: https://www.google.com/)
+2026-09-17 12:46:31,406 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:46:31,406 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:46:31,406 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:46:31,437 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Leadership' (window 14d)
+2026-09-17 12:46:31,437 INFO scraper.search: scrapling search started keyword='Leadership' \u2192 0 urls
+2026-09-17 12:46:31,437 INFO scraper.routes: search completed keyword='Leadership' found=0 extracted=0 failed=0 status=temporarily_unavailable
+[2026-09-17 12:46:32] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+week> (referer: https://www.google.com/)
+2026-09-17 12:46:32,977 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+Productivity+week> (referer: https://www.google.com/)
+2026-09-17 12:46:33,596 INFO scraper.routes: search started keyword='SaaS' days=14 limit=30 mode=scrapling
+2026-09-17 12:46:33,606 INFO scraper.cache: cache miss: viral_posts:saas:14d
+2026-09-17 12:46:33,606 INFO scraper.scrapling: all engines cooling down — force-probing brave once
+[2026-09-17 12:46:34] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+SaaS> (referer: https://www.google.com/)
+2026-09-17 12:46:34,210 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+SaaS> (referer: https://www.google.com/)
+2026-09-17 12:46:35,006 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:46:35,006 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:46:35,006 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:46:35,041 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='Productivity' (window 14d)
+2026-09-17 12:46:35,041 INFO scraper.search: scrapling search started keyword='Productivity' \u2192 0 urls
+2026-09-17 12:46:35,041 INFO scraper.routes: search completed keyword='Productivity' found=0 extracted=0 failed=0 status=temporarily_unavailable
+[2026-09-17 12:46:36] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+SaaS+insights> (referer: https://www.google.com/)
+2026-09-17 12:46:36,910 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+SaaS+insights> (referer: https://www.google.com/)
+[2026-09-17 12:46:39] INFO: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+SaaS+week> (referer: https://www.google.com/)
+2026-09-17 12:46:39,550 INFO scrapling: Fetched (429) <GET https://search.brave.com/search?q=site:linkedin.com/posts/+SaaS+week> (referer: https://www.google.com/)
+2026-09-17 12:46:41,574 INFO scraper.scrapling: engine brave cooling down for 5 min
+2026-09-17 12:46:41,574 INFO scraper.scrapling: skipping engine google (cooldown)
+2026-09-17 12:46:41,574 INFO scraper.scrapling: skipping engine ddg (cooldown)
+2026-09-17 12:46:41,622 INFO scraper.scrapling: discovered 0 unique post URLs for keyword='SaaS' (window 14d)
+2026-09-17 12:46:41,622 INFO scraper.search: scrapling search started keyword='SaaS' \u2192 0 urls
+2026-09-17 12:46:41,627 INFO scraper.routes: search completed keyword='SaaS' found=0 extracted=0 failed=0 status=temporarily_unavailable

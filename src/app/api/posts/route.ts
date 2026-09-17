@@ -3,6 +3,7 @@ import { sql } from "@/lib/db";
 import { requireAuthFromRequest } from "@/lib/auth/get-session";
 import { handleApiError } from "@/lib/errors/api-errors";
 import { z } from "zod";
+import { isAllowedImageUrl } from "@/lib/linkedin/image-url";
 
 const createPostSchema = z.object({
   title: z.string().optional(),
@@ -12,7 +13,13 @@ const createPostSchema = z.object({
   status: z.enum(["DRAFT", "SAVED"]).default("DRAFT"),
   voiceDnaVersionUsed: z.number().optional(),
   scheduledAt: z.string().optional(),
-  imageUrl: z.string().optional(),
+  // Nullable: the generator lets users remove a cover image, and the post
+  // then must be storable as a text-only post.
+  // imageUrl is fetched SERVER-SIDE at publish time, so it is restricted to an
+  // allowlist of public hosts (own uploads origin + Unsplash) to prevent SSRF.
+  imageUrl: z.string().nullable().optional().refine((v) => v == null || isAllowedImageUrl(v), {
+    message: "Image URL must be from an allowed source.",
+  }),
 });
 
 /**

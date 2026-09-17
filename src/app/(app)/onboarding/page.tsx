@@ -19,6 +19,8 @@ interface OnboardingSnapshot {
   data: any;
 }
 
+const TOTAL_STEPS = 6;
+
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -42,6 +44,9 @@ export default function OnboardingPage() {
   const [educationalPersonal, setEducationalPersonal] = useState(50);
   const [safeContrarian, setSafeContrarian] = useState(50);
   const [simpleDetailed, setSimpleDetailed] = useState(50);
+  // Step 6: Connect LinkedIn
+  const [linkedinConnected, setLinkedinConnected] = useState<boolean | null>(null);
+  const [connectingLinkedIn, setConnectingLinkedIn] = useState(false);
 
   // Resume a half-finished questionnaire: restore saved answers and jump to
   // the furthest step the user completed.
@@ -73,6 +78,17 @@ export default function OnboardingPage() {
         if (highest >= 1 && highest < 5) setStep(highest + 1);
       } catch {
         /* resume is best-effort */
+      }
+
+      // Step 6 needs the current LinkedIn connection state.
+      try {
+        const res = await fetch("/api/linkedin/status");
+        const data = await res.json();
+        if (!cancelled && data?.success) {
+          setLinkedinConnected(Boolean(data.data?.connected && data.data?.tokenValid !== false));
+        }
+      } catch {
+        /* status is best-effort; step 6 still works (button just tries OAuth) */
       } finally {
         if (!cancelled) setHydrated(true);
       }
@@ -80,6 +96,23 @@ export default function OnboardingPage() {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // Returning from the LinkedIn OAuth round-trip: show a confirmation and
+  // drop the user on the connect step so they see the result immediately.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("linkedin") === "connected") {
+      setMessage("LinkedIn connected! You can publish and schedule posts now.");
+      setLinkedinConnected(true);
+      setStep(6);
+      window.history.replaceState({}, "", "/onboarding");
+    } else if (params.get("error")) {
+      setMessage("LinkedIn connection didn't complete — you can retry below.");
+      setLinkedinConnected(false);
+      setStep(6);
+      window.history.replaceState({}, "", "/onboarding");
+    }
   }, []);
 
   const toggleMulti = (arr: string[], setArr: (v: string[]) => void, value: string) => {
@@ -132,8 +165,16 @@ export default function OnboardingPage() {
         const ok = await saveStep(5, {
           voiceSliders: { professionalCasual, educationalPersonal, safeContrarian, simpleDetailed },
         });
+        if (!ok) {
+          setLoading(false);
+          return; // stay on step 5 with the error visible
+        }
+        setStep(6);
         setLoading(false);
-        if (!ok) return; // stay on step 5 with the error visible
+        return;
+      }
+      case 6: {
+        // DNA questionnaire is complete — finishing here lands on Voice DNA.
         setMessage("Onboarding complete! Continue to your Voice DNA.");
         router.push("/voice-dna");
         return;
@@ -141,6 +182,25 @@ export default function OnboardingPage() {
     }
 
     setLoading(false);
+  };
+
+  const connectLinkedInFromOnboarding = async () => {
+    setConnectingLinkedIn(true);
+    try {
+      // After OAuth, LinkedIn lands back on this page (returnTo) and
+      // step 6 re-checks the connection state.
+      sessionStorage.setItem("onboarding_gate_checked", "1");
+      const res = await fetch("/api/linkedin/connect?returnTo=/onboarding");
+      const data = await res.json();
+      if (data.success && data.data.authUrl) {
+        window.location.href = data.data.authUrl;
+        return;
+      }
+      setMessage(data.error || "Could not start LinkedIn connection.");
+    } catch {
+      setMessage("Network error while starting LinkedIn connection.");
+    }
+    setConnectingLinkedIn(false);
   };
 
   const skipOnboarding = () => {
@@ -155,6 +215,7 @@ export default function OnboardingPage() {
   const canProceed = () => {
     switch (step) {
       // Per PRD §8.2 only Identity is required; steps 2-5 are skippable.
+      // Step 6 (Connect LinkedIn) is optional too — publishing is gated later.
       case 1: return identity !== "";
       default: return true;
     }
@@ -190,7 +251,7 @@ export default function OnboardingPage() {
           <CardContent className="p-8">
             {/* Progress bar */}
             <div className="flex gap-2 mb-8">
-              {[1, 2, 3, 4, 5].map((s) => (
+              {[1, 2, 3, 4, 5, 6].map((s) => (
                 <div
                   key={s}
                   className={`flex-1 h-1.5 rounded-full transition-colors ${
@@ -204,7 +265,7 @@ export default function OnboardingPage() {
             {step === 1 && (
               <div>
                 <h2 className="text-lg font-semibold mb-1">
-                  Step 1 of 5: What best describes you?
+                  Step 1 of 6: What best describes you?
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">Required — helps us default tone and copy.</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -229,7 +290,7 @@ export default function OnboardingPage() {
             {step === 2 && (
               <div>
                 <h2 className="text-lg font-semibold mb-1">
-                  Step 2 of 5: What&apos;s your area of expertise?
+                  Step 2 of 6: What&apos;s your area of expertise?
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">
                   Select all that apply — you can add custom topics too. (Optional)
@@ -282,7 +343,7 @@ export default function OnboardingPage() {
             {step === 3 && (
               <div>
                 <h2 className="text-lg font-semibold mb-1">
-                  Step 3 of 5: Who&apos;s your target audience?
+                  Step 3 of 6: Who&apos;s your target audience?
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">
                   Who do you want to reach on LinkedIn? (Optional)
@@ -335,7 +396,7 @@ export default function OnboardingPage() {
             {step === 4 && (
               <div>
                 <h2 className="text-lg font-semibold mb-1">
-                  Step 4 of 5: What are your LinkedIn goals?
+                  Step 4 of 6: What are your LinkedIn goals?
                 </h2>
                 <p className="text-sm text-gray-500 mb-4">Select all that apply. (Optional)</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -360,7 +421,7 @@ export default function OnboardingPage() {
             {step === 5 && (
               <div>
                 <h2 className="text-lg font-semibold mb-1">
-                  Step 5 of 5: How would you describe your voice?
+                  Step 5 of 6: How would you describe your voice?
                 </h2>
                 <p className="text-sm text-gray-500 mb-6">
                   These answers create your starting Voice DNA. We&apos;ll refine it based on your actual writing once you add samples.
@@ -399,6 +460,57 @@ export default function OnboardingPage() {
               </div>
             )}
 
+            {/* Step 6: Connect LinkedIn */}
+            {step === 6 && (
+              <div>
+                <h2 className="text-lg font-semibold mb-1">
+                  Step 6 of 6: Connect your LinkedIn account
+                </h2>
+                <p className="text-sm text-gray-500 mb-6">
+                  Your Voice DNA is ready. Connect LinkedIn so generated posts can be
+                  published and scheduled straight to your profile. You can skip this
+                  for now — but publishing stays locked until you connect.
+                </p>
+
+                <div className="border rounded-lg p-6">
+                  {linkedinConnected ? (
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-2xl">
+                        ✓
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">LinkedIn connected</p>
+                        <p className="text-sm text-gray-500">
+                          You&apos;re all set — posts can be published to your profile.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-2xl">
+                        in
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium">Not connected yet</p>
+                        <p className="text-sm text-gray-500 mb-3">
+                          Authorize once — read-only profile access plus permission to
+                          share posts as you. We never post without your action.
+                        </p>
+                        <Button
+                          onClick={connectLinkedInFromOnboarding}
+                          disabled={connectingLinkedIn}
+                        >
+                          {connectingLinkedIn
+                            ? "Redirecting to LinkedIn..."
+                            : "🔗 Connect LinkedIn"}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {message && (
               <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded mt-4">
                 {message}
@@ -420,7 +532,13 @@ export default function OnboardingPage() {
                 <div />
               )}
               <Button onClick={handleNext} disabled={!canProceed() || loading}>
-                {loading ? "Saving..." : step === 5 ? "Create My Voice DNA →" : "Continue"}
+                {loading
+                  ? "Saving..."
+                  : step === 5
+                  ? "Continue"
+                  : step === 6
+                  ? "Go to Voice DNA →"
+                  : "Continue"}
               </Button>
             </div>
           </CardContent>

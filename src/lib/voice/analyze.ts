@@ -12,7 +12,7 @@
  */
 
 import { sql } from "@/lib/db";
-import { getProvider } from "@/lib/ai/types";
+import { withFailover } from "@/lib/ai/types";
 import { computeConfidenceScore } from "@/lib/voice/confidence";
 import { DEFAULT_SOURCE_WEIGHTS } from "@/lib/voice/weighting";
 import { analyzeWritingWithNLP } from "@/lib/voice/nlp-analyzer";
@@ -114,15 +114,17 @@ export async function analyzeVoiceProfile(
   const nlpProfile = analyzeWritingWithNLP(uniqueTextsForNLP);
   console.log("[NLP] Voice analysis complete:", nlpProfile.tone.voiceArchetype, "|", nlpProfile.consistency.confidenceLevel, "confidence");
 
-  // Try AI analysis (may fail due to rate limits)
+  // Try AI analysis (with provider failover; NLP-only as final fallback)
   let analysisResult: any;
   let usedNlpOnly = false;
   try {
-    const provider = getProvider();
-    analysisResult = await provider.analyzeVoice(sampleTexts, {
-      sourceWeighting: DEFAULT_SOURCE_WEIGHTS,
-      nlpProfile,
-    } as any);
+    const { result } = await withFailover((provider) =>
+      provider.analyzeVoice(sampleTexts, {
+        sourceWeighting: DEFAULT_SOURCE_WEIGHTS,
+        nlpProfile,
+      } as any)
+    );
+    analysisResult = result;
   } catch (aiError: any) {
     console.warn("[Voice] AI analysis failed, using NLP-only profile:", aiError?.message?.slice(0, 100));
     usedNlpOnly = true;

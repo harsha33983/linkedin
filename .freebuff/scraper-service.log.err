@@ -1,0 +1,115 @@
+INFO:     Started server process [38648]
+INFO:     Waiting for application startup.
+2026-09-07 11:48:28,315 INFO scraper: scraper service starting: mode=scrapegraphai-cloud ttl=30min llm=ollama/llama3.2
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8100 (Press CTRL+C to quit)
+2026-09-07 12:10:14,520 INFO scraper.cache: cache miss: viral_posts:ai:14d
+2026-09-07 12:10:33,905 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/search "HTTP/1.1 200 OK"
+2026-09-07 12:10:33,956 INFO scraper.search: cloud search started keyword='AI' \u2192 40 urls
+2026-09-07 12:12:37,422 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/timcreasey_ai-aiaabc-m365copilot-activity-7373461763616514049-ujCb (ReadTimeout)
+2026-09-07 12:13:08,120 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:15:12,510 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/dixittiwari_ai-artificialintelligence-agents-activity-7378342024418160640-r5fp (ReadTimeout)
+2026-09-07 12:16:15,437 INFO scraper.cache: cache miss: viral_posts:ai:14d
+2026-09-07 12:17:16,930 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/rk0718_agentic-ai-how-autonomous-goal-driven-systems-activity-7374790444502917120--hyt (ReadTimeout)
+2026-09-07 12:17:18,909 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/search "HTTP/1.1 200 OK"
+2026-09-07 12:17:18,982 INFO scraper.search: cloud search started keyword='AI' \u2192 40 urls
+2026-09-07 12:17:23,484 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:17:27,910 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:17:32,381 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:18:49,270 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:19:36,825 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/rk0718_agentic-ai-how-autonomous-goal-driven-systems-activity-7374790444502917120--hyt (ReadTimeout)
+2026-09-07 12:19:41,353 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:20:28,040 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:21:07,523 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:21:45,374 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/sumitmsc11_ai-agenticai-aiagents-activity-7374311702743568386-MrqL (ReadTimeout)
+2026-09-07 12:21:49,272 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:22:19,564 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:22:34,630 INFO scraper.cache: cache miss: viral_posts:ai:14d
+2026-09-07 12:22:35,539 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/search "HTTP/1.1 402 Payment Required"
+2026-09-07 12:22:35,543 WARNING scraper.cloud: cloud search 402 for 'site:linkedin.com/posts/ AI': {"error":{"type":"insufficient_credits","message":"Insufficient credits","details":{"agentAccess":{"discovery":{"method"
+2026-09-07 12:22:35,846 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/search "HTTP/1.1 402 Payment Required"
+2026-09-07 12:22:35,850 WARNING scraper.cloud: cloud search 402 for 'site:linkedin.com/posts/ AI insights': {"error":{"type":"insufficient_credits","message":"Insufficient credits","details":{"agentAccess":{"discovery":{"method"
+2026-09-07 12:22:36,089 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/search "HTTP/1.1 402 Payment Required"
+2026-09-07 12:22:36,094 WARNING scraper.cloud: cloud search 402 for 'site:linkedin.com/posts/ best AI posts': {"error":{"type":"insufficient_credits","message":"Insufficient credits","details":{"agentAccess":{"discovery":{"method"
+2026-09-07 12:22:36,290 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/search "HTTP/1.1 402 Payment Required"
+2026-09-07 12:22:36,290 WARNING scraper.cloud: cloud search 402 for 'site:linkedin.com/pulse/ AI': {"error":{"type":"insufficient_credits","message":"Insufficient credits","details":{"agentAccess":{"discovery":{"method"
+2026-09-07 12:22:36,523 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/search "HTTP/1.1 402 Payment Required"
+2026-09-07 12:22:36,533 WARNING scraper.cloud: cloud search 402 for 'AI viral linkedin post': {"error":{"type":"insufficient_credits","message":"Insufficient credits","details":{"agentAccess":{"discovery":{"method"
+2026-09-07 12:22:36,533 INFO scraper.search: cloud search started keyword='AI' \u2192 0 urls
+2026-09-07 12:22:36,538 INFO scraper.routes: search completed keyword='AI' found=0 extracted=0 failed=0 status=ok
+2026-09-07 12:23:11,006 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/brijpandeyji_agentic-ai-marks-a-major-shift-from-systems-activity-7383195174761385984-ebsb (ReadTimeout)
+2026-09-07 12:23:46,641 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:24:23,270 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/evan-shortreed_aitransformation-generativeai-businessstrategy-activity-7373339852177596416-bZHD (ReadTimeout)
+2026-09-07 12:25:50,831 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/shreyansvats_ai-futureofwork-artificialintelligence-activity-7380822182630699008-4H55 (ReadTimeout)
+2026-09-07 12:26:27,519 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/shreyansvats_ai-futureofwork-artificialintelligence-activity-7380822182630699008-4H55 (ReadTimeout)
+2026-09-07 12:27:55,165 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/nishad-pulpadan-3843a119_ai-agenticai-aiagents-activity-7375579163627388928-tsZY (ReadTimeout)
+2026-09-07 12:28:31,346 INFO scraper.cloud: cloud extract skipped https://www.linkedin.com/posts/nishad-pulpadan-3843a119_ai-agenticai-aiagents-activity-7375579163627388928-tsZY (ReadTimeout)
+2026-09-07 12:28:37,249 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:28:39,342 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:28:47,040 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:29:24,153 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:29:38,863 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:30:28,890 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:30:31,854 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:30:36,294 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:30:40,717 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:30:45,062 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:30:45,070 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:30:45,070 ERROR scraper.search: ScrapeGraphAI credits exhausted — marking unavailable
+2026-09-07 12:30:45,070 INFO scraper.routes: search completed keyword='AI' found=40 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-07 12:30:49,047 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:30:49,500 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 200 OK"
+2026-09-07 12:30:53,182 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:30:53,190 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:30:53,190 ERROR scraper.search: ScrapeGraphAI credits exhausted — marking unavailable
+2026-09-07 12:30:53,190 INFO scraper.routes: search completed keyword='AI' found=40 extracted=0 failed=0 status=temporarily_unavailable
+2026-09-07 12:30:53,215 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:30:53,215 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/posts/mdzahidulhoque_ive-recently-seen-many-developers-
+2026-09-07 12:30:57,383 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:30:57,389 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/posts/sspaeti_will-ai-replace-human-thinking-the-case-a
+2026-09-07 12:31:02,836 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:02,836 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:08,111 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:08,130 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:08,173 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:08,175 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:13,379 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:13,385 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:13,778 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:13,791 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:18,723 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:18,723 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:18,732 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:18,733 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:24,091 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:24,107 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:24,107 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:24,114 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:29,420 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:31:29,437 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:31:29,437 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/feed/update/urn:li:ugcPost:7387870041054253057
+2026-09-07 12:31:29,437 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:31:33,792 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:31:33,800 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/posts/lindahaviv_all-genai-is-part-of-ai-but-not-all-ai
+2026-09-07 12:31:38,905 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:31:38,913 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/posts/lindahaviv_all-genai-is-part-of-ai-but-not-all-ai
+2026-09-07 12:31:43,313 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:31:43,323 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/posts/nickplotnicoff_i-explain-the-difference-between-g
+2026-09-07 12:31:48,303 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:31:48,313 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/posts/nickplotnicoff_i-explain-the-difference-between-g
+2026-09-07 12:31:52,709 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:31:52,729 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/posts/lydiasukano_neuralnetworks-ai-machinelearning-act
+2026-09-07 12:31:57,641 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 429 Too Many Requests"
+2026-09-07 12:31:57,649 WARNING scraper.cloud: cloud extract rate-limited (429): https://www.linkedin.com/posts/lydiasukano_neuralnetworks-ai-machinelearning-act
+2026-09-07 12:32:02,103 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:32:02,109 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:32:07,596 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:32:07,607 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:32:07,607 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:32:07,607 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:32:13,019 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:32:13,026 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:32:13,043 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:32:13,043 ERROR scraper.cloud: ScrapeGraphAI credits exhausted
+2026-09-07 12:32:17,723 INFO httpx: HTTP Request: POST https://v2-api.scrapegraphai.com/api/extract "HTTP/1.1 402 Payment Required"
+2026-09-07 12:32:17,739 ERROR scraper.cloud: ScrapeGraphAI credits exhausted

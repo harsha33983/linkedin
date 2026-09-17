@@ -82,19 +82,36 @@ export function decryptAccessToken(encryptedToken: string, iv: string): string {
 /**
  * Generate a secure random string for OAuth state.
  * Uses crypto.randomBytes for cryptographic security.
+ *
+ * `returnTo` is an optional same-origin path (e.g. "/onboarding") the callback
+ * should send the user back to after the OAuth round-trip.
  */
-export function generateOAuthState(userId: string): string {
+export function generateOAuthState(userId: string, returnTo?: string): string {
   const randomBytes = crypto.randomBytes(32).toString("hex");
-  const payload = JSON.stringify({ userId, nonce: randomBytes, ts: Date.now() });
+  const payload = JSON.stringify({
+    userId,
+    nonce: randomBytes,
+    ts: Date.now(),
+    returnTo: sanitizeReturnTo(returnTo),
+  });
   return Buffer.from(payload).toString("base64url");
 }
 
 /**
+ * Only allow same-origin absolute paths ("/foo") — never protocol-relative
+ * ("//evil.com") or absolute URLs, to prevent open-redirects via state.
+ */
+function sanitizeReturnTo(returnTo?: string): string | undefined {
+  if (!returnTo || !returnTo.startsWith("/") || returnTo.startsWith("//")) return undefined;
+  return returnTo;
+}
+
+/**
  * Validate and decode an OAuth state value.
- * Returns the userId if valid, null if tampered/expired.
+ * Returns the userId (+ optional returnTo path) if valid, null if tampered/expired.
  * State expires after 10 minutes.
  */
-export function validateOAuthState(state: string): { userId: string } | null {
+export function validateOAuthState(state: string): { userId: string; returnTo?: string } | null {
   try {
     const payload = JSON.parse(Buffer.from(state, "base64url").toString());
 
@@ -107,7 +124,8 @@ export function validateOAuthState(state: string): { userId: string } | null {
       return null;
     }
 
-    return { userId: payload.userId };
+    const returnTo = sanitizeReturnTo(payload.returnTo);
+    return returnTo ? { userId: payload.userId, returnTo } : { userId: payload.userId };
   } catch {
     return null;
   }

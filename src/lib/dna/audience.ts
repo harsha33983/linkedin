@@ -8,15 +8,21 @@
  * - What themes appear in comments
  * - What triggers saves/bookmarks
  *
+ * IMPORTANT: All metrics are REAL — read from posts.publishingResponse.metrics
+ * (populated by the LinkedIn analytics sync). Posts without measured
+ * engagement never contribute fake numbers; with no real data the DNA is
+ * honestly empty (sampleSize 0).
+ *
  * Output: An "Audience DNA" that tells the writer what their audience wants.
  */
 
 import { sql } from "@/lib/db";
+import { readPostMetrics, type PostMetrics } from "@/lib/linkedin/metrics";
 
 interface AudienceDNA {
   audienceProfile: {
     primaryInterests: string[];
-    engagementStyle: string; // " lurkers", "commenters", "sharers", "savers"
+    engagementStyle: string; // "lurkers" | "commenters" | "sharers" | "savers"
     responsePatterns: string[];
   };
   responsePatterns: {
@@ -36,22 +42,50 @@ interface AudienceDNA {
   sampleSize: number;
 }
 
+interface MeasuredPost extends PostMetrics {
+  content: string;
+  topic: string | null;
+  format: string | null;
+  publishedAt: string | null;
+  createdAt: string | null;
+}
+
 /**
- * Analyze audience behavior from published posts.
+ * Analyze audience behavior from published posts with REAL metrics.
  */
 export async function analyzeAudienceDNA(userId: string): Promise<AudienceDNA> {
   const posts = await sql`
     SELECT content, topic, format, "publishingResponse", "publishedAt", "createdAt"
-    FROM posts 
+    FROM posts
     WHERE "userId" = ${userId} AND status = 'PUBLISHED'
     ORDER BY "publishedAt" ASC
   `;
 
   if (posts.length === 0) {
+    await deleteStoredDNA(userId);
     return getEmptyAudienceDNA();
   }
 
-  // Analyze engagement patterns
+  const measured = (posts as any[])
+    .map((post): MeasuredPost => {
+      const metrics = readPostMetrics(post.publishingResponse);
+      return {
+        ...metrics,
+        content: post.content || "",
+        topic: post.topic,
+        format: post.format,
+        publishedAt: post.publishedAt,
+        createdAt: post.createdAt,
+      };
+    })
+    .filter((p) => p.real);
+
+  // No real engagement measured yet → nothing to learn. Remove stale rows.
+  if (measured.length === 0) {
+    await deleteStoredDNA(userId);
+    return getEmptyAudienceDNA();
+  }
+
   let totalImpressions = 0;
   let totalComments = 0;
   let totalShares = 0;
@@ -59,49 +93,37 @@ export async function analyzeAudienceDNA(userId: string): Promise<AudienceDNA> {
   const byDay: Record<string, number[]> = {};
   const hookResponses: Record<string, number[]> = {};
 
-  for (const post of posts) {
-    const data = (post.publishingResponse as any) || {};
-    const impressions = data.impressions || Math.floor(Math.random() * 5000) + 500;
-    const comments = data.comments || Math.floor(Math.random() * 30) + 2;
-    const shares = data.reposts || Math.floor(Math.random() * 15) + 1;
+  for (const post of measured) {
+    totalImpressions += post.impressions;
+    totalComments += post.comments;
+    totalShares += post.reposts;
 
-    totalImpressions += impressions;
-    totalComments += comments;
-    totalShares += shares;
-
-    const pubDate = post.publishedAt ? new Date(post.publishedAt) : new Date(post.createdAt);
+    const pubDate = post.publishedAt ? new Date(post.publishedAt) : new Date(post.createdAt || "");
     const hour = pubDate.getHours();
     const day = pubDate.getDay();
 
     const timeKey = `${hour}:00`;
     if (!byTime[timeKey]) byTime[timeKey] = [];
-    byTime[timeKey].push(comments + shares);
+    byTime[timeKey].push(post.comments + post.reposts);
 
     const dayKey = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][day];
     if (!byDay[dayKey]) byDay[dayKey] = [];
-    byDay[dayKey].push(comments + shares);
+    byDay[dayKey].push(post.comments + post.reposts);
 
-    // Hook response analysis
-    const firstLine = (post.content || "").split("\n")[0] || "";
+    const firstLine = post.content.split("\n")[0] || "";
     const hookType = detectHookType(firstLine);
     if (!hookResponses[hookType]) hookResponses[hookType] = [];
-    hookResponses[hookType].push(comments + shares);
+    hookResponses[hookType].push(post.comments + post.reposts);
   }
 
-  // Calculate averages
-  const avgImpressions = totalImpressions / posts.length;
-  const avgComments = totalComments / posts.length;
-  const avgShares = totalShares / posts.length;
+  const n = measured.length;
+  const avgImpressions = totalImpressions / n;
+  const avgComments = totalComments / n;
+  const avgShares = totalShares / n;
 
-  // Determine audience engagement style
-  const engagementStyle = avgComments > 10 ? "commenters" :
-    avgShares > 5 ? "sharers" : "lurkers";
+  const engagementStyle =
+    avgComments > 10 ? "commenters" : avgShares > 5 ? "sharers" : avgImpressions > 0 ? "lurkers" : "unknown";
 
-  // Find best times
-  const bestTime = findBestTime(byTime);
-  const bestDay = findBestTime(byDay);
-
-  // Identify share triggers
   const shareTriggers = Object.entries(hookResponses)
     .map(([hook, rates]) => ({
       hook,
@@ -113,7 +135,7 @@ export async function analyzeAudienceDNA(userId: string): Promise<AudienceDNA> {
 
   const dna: AudienceDNA = {
     audienceProfile: {
-      primaryInterests: extractInterests(posts),
+      primaryInterests: extractInterests(measured),
       engagementStyle,
       responsePatterns: shareTriggers,
     },
@@ -125,13 +147,13 @@ export async function analyzeAudienceDNA(userId: string): Promise<AudienceDNA> {
     },
     engagementByTime: averageByGroup(byTime),
     engagementByDay: averageByGroup(byDay),
-    commentThemes: extractInterests(posts).slice(0, 5),
+    commentThemes: extractInterests(measured).slice(0, 5),
     shareTriggers,
     avgImpressions,
     avgComments,
     avgShares,
-    confidenceScore: calculateConfidence(posts.length),
-    sampleSize: posts.length,
+    confidenceScore: calculateConfidence(measured.length),
+    sampleSize: measured.length,
   };
 
   await storeAudienceDNA(userId, dna);
@@ -174,29 +196,16 @@ function detectHookType(firstLine: string): string {
   return "curiosity_gap";
 }
 
-function extractInterests(posts: any[]): string[] {
+function extractInterests(posts: MeasuredPost[]): string[] {
   const topics = posts.map((p) => p.topic).filter(Boolean);
   const counts: Record<string, number> = {};
   for (const t of topics) {
-    counts[t] = (counts[t] || 0) + 1;
+    counts[t as string] = (counts[t as string] || 0) + 1;
   }
   return Object.entries(counts)
     .sort(([, a], [, b]) => b - a)
     .slice(0, 5)
     .map(([t]) => t);
-}
-
-function findBestTime(groups: Record<string, number[]>): string {
-  let best = "";
-  let bestAvg = 0;
-  for (const [key, values] of Object.entries(groups)) {
-    const avg = values.reduce((s, v) => s + v, 0) / values.length;
-    if (avg > bestAvg) {
-      bestAvg = avg;
-      best = key;
-    }
-  }
-  return best;
 }
 
 function averageByGroup(groups: Record<string, number[]>): Record<string, number> {
@@ -233,6 +242,10 @@ function getEmptyAudienceDNA(): AudienceDNA {
     confidenceScore: 0.1,
     sampleSize: 0,
   };
+}
+
+async function deleteStoredDNA(userId: string): Promise<void> {
+  await sql`DELETE FROM audience_dna WHERE "userId" = ${userId}`;
 }
 
 async function storeAudienceDNA(userId: string, dna: AudienceDNA): Promise<void> {

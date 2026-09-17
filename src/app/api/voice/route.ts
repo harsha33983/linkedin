@@ -4,6 +4,30 @@ import { requireAuthFromRequest } from "@/lib/auth/get-session";
 import { handleApiError, NotFoundError } from "@/lib/errors/api-errors";
 import { z } from "zod";
 
+/**
+ * Report what can be auto-imported as writing samples for Voice DNA:
+ * the user's posts published through this app (any status with content),
+ * and/or a live LinkedIn connection that can pull their feed posts.
+ */
+async function getAutoImportMeta(userId: string) {
+  const [liConnection] = await sql`
+    SELECT id FROM social_accounts 
+    WHERE "userId" = ${userId} AND provider = 'LINKEDIN' AND status = 'CONNECTED'
+    LIMIT 1
+  `;
+  const [{ publishedPosts }] = (await sql`
+    SELECT COUNT(*)::int AS "publishedPosts" FROM posts 
+    WHERE "userId" = ${userId}
+    AND content IS NOT NULL AND length(content) > 20
+  `) as Array<{ publishedPosts: number }>;
+
+  return {
+    available: Boolean(liConnection) || (publishedPosts || 0) > 0,
+    hasLinkedIn: Boolean(liConnection),
+    publishedPosts: publishedPosts || 0,
+  };
+}
+
 const updateVoiceProfileSchema = z.object({
   tone: z.array(z.string()).optional(),
   sentenceStyle: z.enum(["short", "short-medium", "medium", "long"]).optional(),
@@ -26,41 +50,23 @@ export async function GET(request: NextRequest) {
 
     const [voiceProfile] = await sql`SELECT * FROM voice_profiles WHERE "userId" = ${userId} LIMIT 1`;
 
+    // Get sample count
+    const [{ count }] = await sql`SELECT COUNT(*)::int as count FROM writing_samples WHERE "userId" = ${userId}`;
+    const sampleCount = count;
+
+    const meta: Record<string, unknown> = { autoImport: await getAutoImportMeta(userId) };
+
     if (!voiceProfile) {
-      // For first-time users: tell the page whether there is anything to
-      // auto-import (their own PUBLISHED posts, or a live LinkedIn account) so
-      // it can kick off the import without any manual steps.
-      const [liConnection] = await sql`
-        SELECT id FROM social_accounts 
-        WHERE "userId" = ${userId} AND provider = 'LINKEDIN' AND status = 'CONNECTED'
-        LIMIT 1
-      `;
-      const [{ publishedPosts }] = (await sql`
-        SELECT COUNT(*)::int AS "publishedPosts" FROM posts 
-        WHERE "userId" = ${userId} AND status = 'PUBLISHED'
-        AND content IS NOT NULL AND length(content) > 20
-      `) as Array<{ publishedPosts: number }>;
-
-      const autoImport = {
-        available: Boolean(liConnection) || (publishedPosts || 0) > 0,
-        hasLinkedIn: Boolean(liConnection),
-        publishedPosts: publishedPosts || 0,
-      };
-
       return Response.json(
         {
           success: true,
           data: null,
           message: "No Voice DNA yet. Add writing samples to get started.",
-          meta: { autoImport },
+          meta,
         },
         { status: 200 }
       );
     }
-
-    // Get sample count
-    const [{ count }] = await sql`SELECT COUNT(*)::int as count FROM writing_samples WHERE "userId" = ${userId}`;
-    const sampleCount = count;
 
     return Response.json({
       success: true,
@@ -72,6 +78,7 @@ export async function GET(request: NextRequest) {
         commonTopics: voiceProfile.commonTopics,
         writingPatterns: voiceProfile.writingPatterns,
       },
+      meta,
     });
   } catch (error) {
     return handleApiError(error);

@@ -24,8 +24,12 @@ export async function GET(request: Request) {
       );
     }
 
-    // Generate secure CSRF state
-    const state = generateOAuthState(userId);
+    // Optional same-origin path to return to after the OAuth round-trip
+    // (e.g. "/onboarding" when connecting straight from the DNA questionnaire).
+    const returnTo = new URL(request.url).searchParams.get("returnTo") || undefined;
+
+    // Generate secure CSRF state (returnTo is embedded and sanitized server-side)
+    const state = generateOAuthState(userId, returnTo);
 
     // OpenID Connect scopes: openid (required for OIDC), profile (name), email
     // w_member_social: required for publishing posts

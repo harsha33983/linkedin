@@ -8,6 +8,7 @@ import { ErrorBoundary } from "@/components/errors/error-boundary";
 
 const navigation = [
   { label: "Dashboard", href: "/dashboard" },
+  { label: "🔥 Viral Posts", href: "/viral-posts" },
   { label: "Create Post", href: "/create/ai-post" },
   { label: "Hooks", href: "/create/hooks" },
   { label: "Rewrite", href: "/create/rewrite" },

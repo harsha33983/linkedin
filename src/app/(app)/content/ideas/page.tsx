@@ -14,6 +14,7 @@ interface Idea {
   format: string | null;
   status: string;
   suggestionReason: string | null;
+  usedAt: string | null;
   createdAt: string;
 }
 
@@ -37,6 +38,17 @@ export default function IdeasPage() {
   const [generating, setGenerating] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  // When generation completed elsewhere the idea is consumed (usedAt set).
+  // Detect the return from the generator and refresh so used ideas disappear.
+  useEffect(() => {
+    const onFocus = () => {
+      if (document.visibilityState === "visible") fetchIdeas();
+    };
+    document.addEventListener("visibilitychange", onFocus);
+    return () => document.removeEventListener("visibilitychange", onFocus);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchIdeas = useCallback(async () => {
     setLoading(true);
@@ -220,7 +232,9 @@ export default function IdeasPage() {
                   <div className="flex flex-col gap-2 shrink-0">
                     {tab === "active" && (
                       <Link
-                        href={`/create/ai-post?topic=${encodeURIComponent(idea.title)}`}
+                        href={`/create/ai-post?topic=${encodeURIComponent(idea.title)}${
+                          idea.format ? `&format=${encodeURIComponent(idea.format)}` : ""
+                        }&ideaId=${idea.id}`}
                         passHref
                       >
                         <Button size="sm">Draft post</Button>
@@ -230,6 +244,8 @@ export default function IdeasPage() {
                       <Button size="sm" variant="ghost" onClick={() => setIdeaStatus(idea.id, "dismissed")}>
                         Dismiss
                       </Button>
+                    ) : idea.usedAt ? (
+                      <Badge variant="secondary" className="w-fit">Used</Badge>
                     ) : (
                       <Button size="sm" variant="ghost" onClick={() => setIdeaStatus(idea.id, "active")}>
                         Restore

@@ -7,7 +7,7 @@
 import { Worker, Job } from "bullmq";
 import { redisConnection } from "../connection";
 import { sql } from "@/lib/db";
-import { getProvider } from "@/lib/ai/types";
+import { withFailover } from "@/lib/ai/types";
 import { computeConfidenceScore } from "@/lib/voice/confidence";
 import { DEFAULT_SOURCE_WEIGHTS } from "@/lib/voice/weighting";
 
@@ -68,11 +68,12 @@ export const voiceReanalysisWorker = new Worker(
         }))
         .sort((a: any, b: any) => b.weight - a.weight);
 
-      // Run AI analysis
-      const provider = getProvider();
-      const result = await provider.analyzeVoice(
-        weightedSamples.map((s: any) => s.content),
-        { sourceWeighting: DEFAULT_SOURCE_WEIGHTS }
+      // Run AI analysis (with provider failover)
+      const { result } = await withFailover((provider) =>
+        provider.analyzeVoice(
+          weightedSamples.map((s: any) => s.content),
+          { sourceWeighting: DEFAULT_SOURCE_WEIGHTS }
+        )
       );
 
       const confidenceScore = computeConfidenceScore(

@@ -20,8 +20,10 @@ import { HOOK_GENERATION_PROMPT } from "./prompts/hook-generation";
 import { IDEA_GENERATION_PROMPT } from "./prompts/idea-generation";
 import { REWRITE_PROMPT } from "./prompts/rewrite";
 import { QUALITY_CHECK_PROMPT } from "./prompts/post-quality-check";
+import { POST_GENERATION_STREAM_PROMPT } from "./prompts/post-generation-stream";
 
-const MODEL = "openai/gpt-oss-20b";
+const MODEL = process.env.AI_MODEL || "openai/gpt-oss-120b";
+const GROQ_FALLBACK_MODELS = ["openai/gpt-oss-120b", "openai/gpt-oss-20b"];
 
 export class GroqProvider implements AIProvider {
   name = "groq";
@@ -29,7 +31,10 @@ export class GroqProvider implements AIProvider {
 
   constructor() {
     this.client = new Groq({
-      apiKey: process.env.GROQ_API_KEY,
+      // The Groq SDK throws at construction if the key is undefined — use a
+      // placeholder so a missing key fails at request time (401) instead,
+      // letting the provider-failover layer handle it gracefully.
+      apiKey: process.env.GROQ_API_KEY || "missing-groq-api-key",
     });
   }
 
@@ -130,5 +135,48 @@ export class GroqProvider implements AIProvider {
       "json"
     );
     return JSON.parse(result) as QualityCheckResult;
+  }
+
+  /**
+   * Stream a post generation token-by-token through the delimiter protocol
+   * (see post-generation-stream.ts). Falls back through the model list if the
+   * primary model errors — same resilience as chat().
+   */
+  async streamPost(
+    params: GeneratePostParams & { recentPosts?: any[]; trendingTopics?: any[]; contentPillars?: string[]; styleContext?: any },
+    onText: (delta: string) => void
+  ): Promise<void> {
+    const prompt = POST_GENERATION_STREAM_PROMPT(params);
+    const models = [MODEL, ...(GROQ_FALLBACK_MODELS.filter((m) => m !== MODEL))];
+    let lastError: any;
+
+    for (const model of models) {
+      try {
+        const stream = await this.client.chat.completions.create({
+          model,
+          messages: [
+            { role: "system", content: "You are the AI Growth Engine for LinkedIn content. Follow the OUTPUT FORMAT exactly." },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.7,
+          max_tokens: 4096,
+          stream: true,
+        } as any);
+
+        for await (const chunk of stream as any) {
+          const delta = chunk?.choices?.[0]?.delta?.content;
+          if (delta) onText(delta);
+        }
+        return; // success
+      } catch (err: any) {
+        lastError = err;
+        const msg = String(err?.message || err);
+        // Model-specific failures (decommissioned/blocked) → try next model.
+        // Auth/quota failures won't fix themselves on another model.
+        if (err?.status === 401 || err?.status === 429 || /quota|billing/i.test(msg)) throw err;
+        console.warn(`[Groq] streamPost model "${model}" failed, trying next:`, msg.slice(0, 120));
+      }
+    }
+    throw lastError;
   }
 }

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { zonedTimeToUtc } from "@/lib/tz";
+import { useLinkedInGate, connectUrl } from "@/hooks/use-linkedin-gate";
 
 interface PostVersion {
   id: string;
@@ -16,6 +17,7 @@ interface PostVersion {
   format: string;
   scores: { overall: number; voiceFit: number };
   imageUrl?: string;
+  imageQuery?: string;
 }
 
 interface GenerationResult {
@@ -53,24 +55,114 @@ export default function AiPostPage() {
   const [tone, setTone] = useState("");
   const [length, setLength] = useState<"short" | "medium" | "long">("medium");
   const [targetAudience, setTargetAudience] = useState("");
+  // User facts — the more concrete detail given, the less generic the post.
+  const [whatHappened, setWhatHappened] = useState("");
+  const [whatLearned, setWhatLearned] = useState("");
+  const [resultFact, setResultFact] = useState("");
+  const [showFacts, setShowFacts] = useState(false);
 
   // Generation state
   const [generating, setGenerating] = useState(false);
+  const [providerStatus, setProviderStatus] = useState("");
   const [result, setResult] = useState<GenerationResult | null>(null);
   const [error, setError] = useState("");
 
   // Prefill the topic (and format) from ?topic= / ?format= — e.g. when the
   // user clicks "Draft post" on an idea card in the Ideas module.
+  // ideaId is remembered so the idea can be consumed after a successful
+  // generation (it then disappears from the active ideas list).
   const prefilledRef = useRef(false);
+  const ideaIdRef = useRef<string | null>(null);
   useEffect(() => {
     if (prefilledRef.current) return;
     prefilledRef.current = true;
     const params = new URLSearchParams(window.location.search);
     const t = params.get("topic");
     const f = params.get("format");
+    const ideaId = params.get("ideaId");
     if (t) setTopic(t);
     if (f) setFormat(f);
+    if (ideaId) ideaIdRef.current = ideaId;
   }, []);
+
+  /** Mark the originating idea as used so it drops out of the active list. */
+  const consumeIdea = async () => {
+    const ideaId = ideaIdRef.current;
+    if (!ideaId) return;
+    ideaIdRef.current = null;
+    try {
+      await fetch("/api/ideas", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ideaId }),
+      });
+    } catch {
+      // Non-fatal: the idea stays active and can be consumed later.
+    }
+  };
+
+  // Resume the last generation after a refresh/navigation so drafts-in-
+  // progress survive (versions + content edits + image choices are restored
+  // from the latest 24h post generation stored server-side).
+  const restoreDoneRef = useRef(false);
+  useEffect(() => {
+    if (restoreDoneRef.current) return;
+    restoreDoneRef.current = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/generation/latest");
+        const data = await res.json();
+        if (!data.success || !data.data) return;
+        const { versions, overrides, generationId, metadata } = data.data;
+        if (!Array.isArray(versions) || versions.length === 0) return;
+        const custom: Record<string, string> = {};
+        const choice: Record<string, "system" | "custom"> = {};
+        const restored = versions.map((v: PostVersion) => {
+          const o = overrides?.[v.id];
+          if (!o) return v;
+          const next = { ...v };
+          if (typeof o.content === "string") next.content = o.content;
+          if (o.imageUrl == null) next.imageUrl = undefined;
+          else if (typeof o.imageUrl === "string") next.imageUrl = o.imageUrl;
+          if (o.customImageUrl) custom[v.id] = o.customImageUrl;
+          if (o.customChosen) choice[v.id] = "custom";
+          return next;
+        });
+        setCustomImages(custom);
+        setImageChoice(choice);
+        setResult({ versions: restored, metadata, generationId });
+      } catch {
+        // No session to resume — start fresh.
+      }
+    })();
+  }, []);
+
+  /** Persist the current working state of a generation (idempotent snapshot). */
+  const persistOverrides = async (
+    versions: PostVersion[],
+    custom = customImages,
+    choice = imageChoice
+  ) => {
+    if (!result?.generationId || versions.length === 0) return;
+    const overrides: Record<string, any> = {};
+    versions.forEach((v) => {
+      overrides[v.id] = {
+        content: v.content,
+        imageUrl: v.imageUrl ?? null,
+        customImageUrl: custom[v.id] || null,
+        customChosen: choice[v.id] === "custom",
+      };
+    });
+    try {
+      await fetch("/api/generation/latest", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ generationId: result.generationId, overrides }),
+      });
+    } catch {
+      // Non-critical — state survives in memory regardless.
+    }
+  };
   const [selectedVersion, setSelectedVersion] = useState<string | null>(null);
   const [editingVersion, setEditingVersion] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
@@ -82,6 +174,9 @@ export default function AiPostPage() {
   // Scheduling state (per generated version)
   const [schedulingId, setSchedulingId] = useState<string | null>(null);
   const [scheduleBusy, setScheduleBusy] = useState(false);
+  // Publishing gate: scheduling/publishing requires a connected LinkedIn account
+  const { connected: linkedinConnected, refresh: refreshLinkedinGate } = useLinkedInGate();
+  const [showConnectPrompt, setShowConnectPrompt] = useState(false);
   const [scheduleDate, setScheduleDate] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
@@ -96,6 +191,7 @@ export default function AiPostPage() {
   const [imageChoice, setImageChoice] = useState<Record<string, "system" | "custom">>({});
   const [customImages, setCustomImages] = useState<Record<string, string>>({});
   const [uploadingImageId, setUploadingImageId] = useState<string | null>(null);
+  const [generatingImageId, setGeneratingImageId] = useState<string | null>(null);
 
   const TIMEZONES = ["UTC", "America/New_York", "America/Los_Angeles", "Europe/London", "Asia/Kolkata", "Asia/Tokyo"];
 
@@ -117,8 +213,13 @@ export default function AiPostPage() {
       const res = await fetch("/api/uploads/image", { method: "POST", body: form });
       const data = await res.json();
       if (data.success && data.url) {
-        setCustomImages((prev) => ({ ...prev, [versionId]: data.url }));
-        setImageChoice((prev) => ({ ...prev, [versionId]: "custom" }));
+        const nextCustom = { ...customImages, [versionId]: data.url };
+        const nextChoice = { ...imageChoice, [versionId]: "custom" as const };
+        setCustomImages(nextCustom);
+        setImageChoice(nextChoice);
+        if (result?.versions) {
+          persistOverrides(result.versions, nextCustom, nextChoice);
+        }
         setMessage("Image added — this version will publish with your image.");
       } else {
         setMessage(data.error || "Image upload failed.");
@@ -130,34 +231,202 @@ export default function AiPostPage() {
     }
   };
 
+  /** Replace a version's cover with a freshly generated image. */
+  const generateNewImage = async (version: PostVersion) => {
+    setGeneratingImageId(version.id);
+    setMessage("");
+    try {
+      const res = await fetch("/api/ai/generate-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: version.imageQuery || topic }),
+      });
+      const data = await res.json();
+      if (data.success && data.url) {
+        const nextVersions = (result?.versions || []).map((v) =>
+          v.id === version.id ? { ...v, imageUrl: data.url } : v
+        );
+        const nextChoice = { ...imageChoice, [version.id]: "system" as const };
+        setResult((prev) => {
+          if (!prev) return prev;
+          return { ...prev, versions: nextVersions };
+        });
+        setImageChoice(nextChoice);
+        persistOverrides(nextVersions, customImages, nextChoice);
+        setMessage("New image generated — this version will publish with it.");
+      } else {
+        setMessage(data.error || "Could not generate a new image.");
+      }
+    } catch {
+      setMessage("Could not generate a new image.");
+    } finally {
+      setGeneratingImageId(null);
+    }
+  };
+
+  /** Remove the cover image entirely — the post will publish text-only. */
+  const removeImage = (versionId: string) => {
+    const nextVersions = (result?.versions || []).map((v) =>
+      v.id === versionId ? { ...v, imageUrl: undefined } : v
+    );
+    const nextCustom = { ...customImages };
+    delete nextCustom[versionId];
+    const nextChoice = { ...imageChoice };
+    delete nextChoice[versionId];
+    setResult((prev) => {
+      if (!prev) return prev;
+      return { ...prev, versions: nextVersions };
+    });
+    setCustomImages(nextCustom);
+    setImageChoice(nextChoice);
+    persistOverrides(nextVersions, nextCustom, nextChoice);
+    setMessage("Image removed — this version will publish without a cover.");
+  };
+
+  /**
+   * Streaming generation: consumes the NDJSON event stream from
+   * /api/ai/generate-post/stream. Version cards appear as soon as each
+   * version starts, and post text grows token-by-token while the model is
+   * still writing. Falls back to the buffered endpoint if streaming fails.
+   */
   const generate = async () => {
     if (!topic.trim()) return;
     setGenerating(true);
     setError("");
     setResult(null);
+    setProviderStatus("");
+
+    const applyEvent = (ev: any) => {
+      if (ev.type === "status") {
+        setProviderStatus(ev.provider || "");
+        return;
+      }
+      if (ev.type === "version_start" || ev.type === "content" || ev.type === "version_done") {
+        setResult((prev) => {
+          const versions = prev?.versions ? [...prev.versions] : [];
+          let v = versions[ev.index];
+          if (ev.type === "version_start") {
+            if (!v) {
+              v = {
+                id: `v${ev.index + 1}`,
+                label: ev.label || `Version ${ev.index + 1}`,
+                content: "",
+                hook: ev.hook || "",
+                format: ev.format || "Educational",
+                scores: ev.scores || { overall: 0, voiceFit: 0 },
+              };
+              versions[ev.index] = v;
+            }
+          } else if (v) {
+            if (ev.type === "content" && ev.delta) {
+              v = { ...v, content: v.content + ev.delta };
+            }
+            if (ev.type === "version_done") {
+              v = { ...v, content: (v.content || "").replace(/\n+$/, "").trim() };
+            }
+          }
+          if (!v) return prev;
+          versions[ev.index] = v;
+          return {
+            versions,
+            metadata: prev?.metadata || { model: "stream", voiceDnaVersionUsed: 0, confidenceScore: 0.5 },
+            generationId: prev?.generationId || "",
+          };
+        });
+      }
+    };
+
+    const streamAttempt = async (): Promise<boolean> => {
+      try {
+        const res = await fetch("/api/ai/generate-post/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            topic,
+            goal: goal || undefined,
+            format: format || undefined,
+            tone: tone || undefined,
+            length,
+            targetAudience: targetAudience || undefined,
+            whatHappened: whatHappened.trim() || undefined,
+            whatLearned: whatLearned.trim() || undefined,
+            result: resultFact.trim() || undefined,
+          }),
+        });
+        if (!res.ok || !res.body) return false;
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let finalResult: any = null;
+        let streamError: string | null = null;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          let nl: number;
+          while ((nl = buffer.indexOf("\n")) !== -1) {
+            const line = buffer.slice(0, nl);
+            buffer = buffer.slice(nl + 1);
+            if (!line.trim()) continue;
+            try {
+              const ev = JSON.parse(line);
+              if (ev.type === "done") finalResult = ev.result;
+              else if (ev.type === "error") streamError = ev.error;
+              else applyEvent(ev);
+            } catch {
+              // ignore malformed line
+            }
+          }
+        }
+
+        if (finalResult) {
+          setResult(finalResult);
+          setProviderStatus(finalResult.metadata?.model || "");
+          return true;
+        }
+        if (streamError) {
+          setError(streamError);
+          return true;
+        }
+        return false;
+      } catch {
+        return false;
+      }
+    };
+
+    const bufferedAttempt = async () => {
+      try {
+        const res = await fetch("/api/ai/generate-post", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            topic,
+            goal: goal || undefined,
+            format: format || undefined,
+            tone: tone || undefined,
+            length,
+            targetAudience: targetAudience || undefined,
+            whatHappened: whatHappened.trim() || undefined,
+            whatLearned: whatLearned.trim() || undefined,
+            result: resultFact.trim() || undefined,
+          }),
+        });
+        const data = await res.json();
+        if (data.success) setResult(data.data);
+        else setError(data.error || "Generation failed");
+      } catch {
+        setError("An unexpected error occurred");
+      }
+    };
 
     try {
-      const res = await fetch("/api/ai/generate-post", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          topic,
-          goal: goal || undefined,
-          format: format || undefined,
-          tone: tone || undefined,
-          length,
-          targetAudience: targetAudience || undefined,
-        }),
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setResult(data.data);
-      } else {
-        setError(data.error || "Generation failed");
-      }
-    } catch {
-      setError("An unexpected error occurred");
+      const streamed = await streamAttempt();
+      if (!streamed) await bufferedAttempt();
+      // Generation succeeded → the idea that seeded it is done; remove it
+      // from the active ideas list.
+      await consumeIdea();
     } finally {
       setGenerating(false);
     }
@@ -267,18 +536,36 @@ export default function AiPostPage() {
 
   const saveEdit = async () => {
     if (!editingVersion || !result) return;
+    const before = result.versions.find((v) => v.id === editingVersion);
     // Update the version in-place for display
+    const nextVersions = result.versions.map((v) =>
+      v.id === editingVersion ? { ...v, content: editContent } : v
+    );
     setResult((prev) => {
       if (!prev) return prev;
-      return {
-        ...prev,
-        versions: prev.versions.map((v) =>
-          v.id === editingVersion ? { ...v, content: editContent } : v
-        ),
-      };
+      return { ...prev, versions: nextVersions };
     });
+    persistOverrides(nextVersions);
+    // Edit learning: feed the AI-draft → user-final delta back into the
+    // style system so future generations match how this user actually writes.
+    if (before && before.content !== editContent && result.generationId) {
+      try {
+        await fetch("/api/ai/edit-learning", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            generationId: result.generationId,
+            versionId: editingVersion,
+            aiDraft: before.content,
+            final: editContent,
+          }),
+        });
+      } catch {
+        // Learning is best-effort; never block the edit.
+      }
+    }
     setEditingVersion(null);
-    setMessage("Edit applied. Save as draft when ready.");
+    setMessage("Edit applied. Your style learns from this. Save as draft when ready.");
   };
 
   return (
@@ -287,6 +574,37 @@ export default function AiPostPage() {
       <p className="text-gray-600 mb-8">
         Generate 3 personalized versions using your Voice DNA.
       </p>
+
+      {/* LinkedIn connection prompt: shown when the user tries to schedule/publish
+          without a connected account. */}
+      {showConnectPrompt && linkedinConnected === false && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm p-4 rounded mb-6 flex items-center justify-between gap-4">
+          <div>
+            <p className="font-medium">LinkedIn isn't connected yet</p>
+            <p className="text-amber-700">
+              Connect your account to publish or schedule posts. Generation works
+              without it — publishing doesn't.
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              size="sm"
+              onClick={() => {
+                window.location.href = connectUrl("/create/ai-post");
+              }}
+            >
+              🔗 Connect LinkedIn
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setShowConnectPrompt(false)}
+            >
+              Dismiss
+            </Button>
+          </div>
+        </div>
+      )}
 
       {message && (
         <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded mb-6">
@@ -382,10 +700,70 @@ export default function AiPostPage() {
             </div>
           </div>
 
+          {/* User facts — concrete detail = less generic output */}
           <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowFacts((s) => !s)}
+              className="text-sm font-medium text-blue-700 hover:text-blue-900"
+            >
+              {showFacts ? "− Hide details" : "+ Add what actually happened (recommended)"}
+            </button>
+            {showFacts && (
+              <div className="mt-3 grid grid-cols-1 gap-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    What actually happened?
+                  </label>
+                  <textarea
+                    value={whatHappened}
+                    onChange={(e) => setWhatHappened(e.target.value)}
+                    rows={2}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    placeholder="e.g., Our migration to the new API broke every webhook for 3 hours on Friday"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    What did you learn?
+                  </label>
+                  <textarea
+                    value={whatLearned}
+                    onChange={(e) => setWhatLearned(e.target.value)}
+                    rows={2}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    placeholder="e.g., Retry queues without dead-letter handling just hide failures"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Any specific result? (numbers only you know)
+                  </label>
+                  <textarea
+                    value={resultFact}
+                    onChange={(e) => setResultFact(e.target.value)}
+                    rows={2}
+                    className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                    placeholder="e.g., Error rate went from 14% to under 1% in two weeks"
+                  />
+                </div>
+                <p className="text-xs text-gray-500">
+                  The more specifics you give, the less generic the post. Only these
+                  facts may appear as numbers or claims — nothing is invented.
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="mt-4 flex items-center gap-3">
             <Button onClick={generate} disabled={!topic.trim() || generating}>
               {generating ? "Generating..." : "✨ Generate 3 Versions"}
             </Button>
+            {generating && providerStatus && (
+              <span className="text-xs text-gray-500">
+                writing with <span className="font-medium text-gray-700">{providerStatus}</span>…
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -420,6 +798,9 @@ export default function AiPostPage() {
                       <Badge variant="secondary">{version.format}</Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm text-gray-500">
+                      {generating && !version.content.trim() && (
+                        <span className="animate-pulse">writing…</span>
+                      )}
                       <span>
                         Overall: {version.scores.overall}
                       </span>
@@ -502,6 +883,28 @@ export default function AiPostPage() {
                           Publishing with your image
                         </span>
                       )}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={generatingImageId === version.id}
+                      onClick={() => generateNewImage(version)}
+                    >
+                      {generatingImageId === version.id
+                        ? "Generating…"
+                        : effectiveImageUrl(version)
+                        ? "🎨 New image"
+                        : "🎨 Generate cover"}
+                    </Button>
+                    {effectiveImageUrl(version) && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-500"
+                        onClick={() => removeImage(version.id)}
+                      >
+                        🗑 Remove image
+                      </Button>
+                    )}
                   </div>
 
                   {editingVersion === version.id ? (
@@ -566,14 +969,25 @@ export default function AiPostPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() =>
+                      onClick={() => {
+                        if (linkedinConnected === false) {
+                          // LinkedIn not connected — show the connect prompt
+                          // instead of letting the schedule silently fail later.
+                          setShowConnectPrompt(true);
+                          setMessage(
+                            "Connect your LinkedIn account first — scheduling needs it to publish at the chosen time."
+                          );
+                          return;
+                        }
                         setSchedulingId((cur) =>
                           cur === version.id ? null : version.id
-                        )
-                      }
+                        );
+                      }}
                     >
                       {schedulingId === version.id
                         ? "Close Schedule"
+                        : linkedinConnected === false
+                        ? "🔒 Schedule (connect LinkedIn)"
                         : "🗓 Schedule"}
                     </Button>
 

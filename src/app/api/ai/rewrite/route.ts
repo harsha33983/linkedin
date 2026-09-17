@@ -2,7 +2,10 @@ import { NextRequest } from "next/server";
 import { sql } from "@/lib/db";
 import { requireAuthFromRequest } from "@/lib/auth/get-session";
 import { handleApiError, ValidationError, AiGenerationError } from "@/lib/errors/api-errors";
-import { getProvider } from "@/lib/ai/types";
+import { withFailover } from "@/lib/ai/types";
+import { routeGenerate } from "@/lib/ai/llm-router";
+import { getProviderByName } from "@/lib/ai/provider-registry";
+import { checkRateLimitRedis } from "@/lib/rate-limit/redis-limiter";
 import { z } from "zod";
 
 const rewriteSchema = z.object({
@@ -16,6 +19,10 @@ const rewriteSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const userId = await requireAuthFromRequest(request as any);
+    const rl = await checkRateLimitRedis(`ai:rewrite:${userId}`, 40, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return Response.json({ success: false, error: "Rate limit exceeded. Please try again later.", resetAt: rl.resetAt }, { status: 429 });
+    }
     const body = await request.json();
     const parsed = rewriteSchema.parse(body);
 
@@ -25,20 +32,24 @@ export async function POST(request: NextRequest) {
 
     if (!voiceProfile) {
       throw new ValidationError("No Voice DNA found. Please add writing samples first.");
-    }
-
-    const provider = getProvider();
-    let result;
-    try {
-      result = await provider.rewriteContent({
-        content: parsed.content,
-        instructions: parsed.instructions,
-        voiceProfile: voiceProfile as any,
-      });
-    } catch (aiError) {
-      console.error("Rewrite failed:", aiError);
-      throw new AiGenerationError("Rewrite failed. Please try again.");
-    }
+    }    // Rewrite — routed through the LLM router (MEDIUM complexity → cheap
+    // provider first, Groq second, bounded retry/backoff, generation log).
+    const { result, provider: usedProvider, fallbackUsed } = await routeGenerate({
+      taskType: "REWRITE",
+      routeName: "rewrite",
+      userId,
+      inputSize: parsed.content.length,
+      isUsable: (r: any) => r && (typeof r.rewritten === "string" || typeof r.content === "string"),
+      op: (providerName: string) => {
+        const provider = getProviderByName(providerName);
+        if (!provider) throw new Error(`Provider ${providerName} unavailable`);
+        return provider.rewriteContent({
+          content: parsed.content,
+          instructions: parsed.instructions,
+          voiceProfile: voiceProfile as any,
+        });
+      },
+    });
 
     // Store generation record
     await sql`
@@ -53,6 +64,7 @@ export async function POST(request: NextRequest) {
     return Response.json({
       success: true,
       data: result,
+      meta: { provider: usedProvider, fallbackUsed },
     });
   } catch (error) {
     return handleApiError(error);

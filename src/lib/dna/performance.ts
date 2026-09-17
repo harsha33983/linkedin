@@ -9,28 +9,17 @@
  * - Optimal post length
  * - Best posting times
  *
+ * IMPORTANT: Every number here is REAL. Metrics are read from
+ * posts.publishingResponse.metrics (populated by the LinkedIn analytics sync;
+ * shape documented in src/lib/linkedin/metrics.ts). Posts without real metrics
+ * are excluded from performance scoring; if nothing is measured yet the DNA is
+ * honestly empty (sampleSize 0) instead of being invented.
+ *
  * Output: A structured "Performance DNA" that guides future generation.
  */
 
 import { sql } from "@/lib/db";
-
-interface PostMetrics {
-  content: string;
-  impressions: number;
-  likes: number;
-  comments: number;
-  reposts: number;
-  saves: number;
-  engagementRate: number;
-  topic: string | null;
-  format: string | null;
-  hookType: string;
-  structure: string;
-  length: "short" | "medium" | "long";
-  publishedAt: string | null;
-  dayOfWeek: number;
-  hourOfDay: number;
-}
+import { readPostMetrics, type PostMetrics } from "@/lib/linkedin/metrics";
 
 interface PerformanceDNA {
   topicScores: Record<string, number>;
@@ -46,102 +35,98 @@ interface PerformanceDNA {
   sampleSize: number;
 }
 
+interface AnalyzedPost extends PostMetrics {
+  content: string;
+  topic: string | null;
+  format: string | null;
+  hookType: string;
+  structure: string;
+  length: "short" | "medium" | "long";
+  publishedAt: string | null;
+  dayOfWeek: number;
+  hourOfDay: number;
+}
+
 /**
- * Analyze all published posts and compute Performance DNA.
+ * Analyze all published posts and compute Performance DNA from REAL metrics.
  */
 export async function analyzePerformanceDNA(userId: string): Promise<PerformanceDNA> {
-  // Fetch all published posts with their metrics
   const posts = await sql`
-    SELECT 
+    SELECT
       content, topic, format, status,
       "externalPostId", "publishingResponse",
       "publishedAt", "createdAt"
-    FROM posts 
-    WHERE "userId" = ${userId} 
+    FROM posts
+    WHERE "userId" = ${userId}
     AND status = 'PUBLISHED'
     ORDER BY "publishedAt" ASC
   `;
 
   if (posts.length === 0) {
+    await deleteStoredDNA(userId);
     return getEmptyPerformanceDNA();
   }
 
-  // Parse metrics from each post
-  const metrics: PostMetrics[] = posts.map((post: any) => {
-    const pubData = (post.publishingResponse as any) || {};
+  // Build per-post records with real metrics (zeros + real:false when unsynced).
+  const analyzed: AnalyzedPost[] = (posts as any[]).map((post) => {
     const content = post.content || "";
     const firstLine = content.split("\n")[0] || "";
     const wordCount = content.split(/\s+/).length;
+    const metrics = readPostMetrics(post.publishingResponse);
 
-    // Detect hook type
-    const hookType = detectHookType(firstLine);
-
-    // Detect structure
-    const structure = detectStructure(content);
-
-    // Determine length
-    const length: "short" | "medium" | "long" =
-      wordCount < 50 ? "short" : wordCount < 150 ? "medium" : "long";
-
-    // Parse timing
     const pubDate = post.publishedAt ? new Date(post.publishedAt) : new Date(post.createdAt);
-    const dayOfWeek = pubDate.getDay();
-    const hourOfDay = pubDate.getHours();
-
-    // Simulate engagement metrics (will be real when LinkedIn analytics API is connected)
-    const impressions = pubData.impressions || Math.floor(Math.random() * 5000) + 500;
-    const likes = pubData.likes || Math.floor(Math.random() * 100) + 10;
-    const comments = pubData.comments || Math.floor(Math.random() * 30) + 2;
-    const reposts = pubData.reposts || Math.floor(Math.random() * 15) + 1;
-    const saves = pubData.saves || Math.floor(Math.random() * 10) + 1;
-    const engagementRate = (likes + comments + reposts + saves) / impressions;
 
     return {
+      ...metrics,
       content,
-      impressions,
-      likes,
-      comments,
-      reposts,
-      saves,
-      engagementRate,
       topic: post.topic,
       format: post.format,
-      hookType,
-      structure,
-      length,
+      hookType: detectHookType(firstLine),
+      structure: detectStructure(content),
+      length: wordCount < 50 ? "short" : wordCount < 150 ? "medium" : "long",
       publishedAt: post.publishedAt,
-      dayOfWeek,
-      hourOfDay,
+      dayOfWeek: pubDate.getDay(),
+      hourOfDay: pubDate.getHours(),
     };
   });
 
-  // Calculate scores for each dimension
-  const avgEngagement = metrics.reduce((sum, m) => sum + m.engagementRate, 0) / metrics.length;
-  const top25Threshold = getPercentile(metrics.map((m) => m.engagementRate), 0.75);
+  // Only posts with REAL measured engagement contribute to scores.
+  const withRealMetrics = analyzed.filter((p) => p.real);
 
-  const topicScores = calculateDimensionScores(metrics, "topic", top25Threshold);
-  const hookScores = calculateDimensionScores(metrics, "hookType", top25Threshold);
-  const formatScores = calculateDimensionScores(metrics, "format", top25Threshold);
-  const structureScores = calculateDimensionScores(metrics, "structure", top25Threshold);
-  const lengthScores = calculateDimensionScores(metrics, "length", top25Threshold);
+  if (withRealMetrics.length === 0) {
+    // No real data yet → no invented DNA. Remove any stale (possibly
+    // fabricated) stored row so nothing downstream trusts it.
+    await deleteStoredDNA(userId);
+    return getEmptyPerformanceDNA();
+  }
 
-  // Timing scores
-  const timingScores = calculateTimingScores(metrics, top25Threshold);
+  const avgEngagement =
+    withRealMetrics.reduce((sum, m) => sum + m.engagementRate, 0) / withRealMetrics.length;
+  const top25Threshold = getPercentile(
+    withRealMetrics.map((m) => m.engagementRate),
+    0.75
+  );
 
-  // Top performing posts
-  const sorted = [...metrics].sort((a, b) => b.engagementRate - a.engagementRate);
-  const topPerformingPosts = sorted.slice(0, Math.ceil(sorted.length * 0.25)).map((m) => ({
-    content: m.content.substring(0, 200),
-    engagementRate: m.engagementRate,
-    topic: m.topic || "unknown",
-  }));
+  const topicScores = calculateDimensionScores(withRealMetrics, "topic", top25Threshold);
+  const hookScores = calculateDimensionScores(withRealMetrics, "hookType", top25Threshold);
+  const formatScores = calculateDimensionScores(withRealMetrics, "format", top25Threshold);
+  const structureScores = calculateDimensionScores(withRealMetrics, "structure", top25Threshold);
+  const lengthScores = calculateDimensionScores(withRealMetrics, "length", top25Threshold);
+  const timingScores = calculateTimingScores(withRealMetrics, top25Threshold);
 
-  // Underperforming patterns
+  const sorted = [...withRealMetrics].sort((a, b) => b.engagementRate - a.engagementRate);
+  const topPerformingPosts = sorted
+    .slice(0, Math.ceil(sorted.length * 0.25))
+    .map((m) => ({
+      content: m.content.substring(0, 200),
+      engagementRate: m.engagementRate,
+      topic: m.topic || "unknown",
+    }));
+
   const underperforming = sorted.slice(-Math.ceil(sorted.length * 0.25));
   const underperformingPatterns = identifyUnderperformingPatterns(underperforming);
 
-  // Confidence score based on sample size and data quality
-  const confidenceScore = calculateConfidence(metrics.length, posts.length);
+  const confidenceScore = calculateConfidence(withRealMetrics.length, analyzed.length);
 
   const dna: PerformanceDNA = {
     topicScores,
@@ -154,12 +139,10 @@ export async function analyzePerformanceDNA(userId: string): Promise<Performance
     topPerformingPosts,
     underperformingPatterns,
     confidenceScore,
-    sampleSize: metrics.length,
+    sampleSize: withRealMetrics.length,
   };
 
-  // Store in database
   await storePerformanceDNA(userId, dna);
-
   return dna;
 }
 
@@ -220,8 +203,8 @@ function detectStructure(content: string): string {
 }
 
 function calculateDimensionScores(
-  metrics: PostMetrics[],
-  dimension: keyof PostMetrics,
+  metrics: AnalyzedPost[],
+  dimension: keyof Pick<AnalyzedPost, "topic" | "hookType" | "format" | "structure" | "length">,
   topThreshold: number
 ): Record<string, number> {
   const groups: Record<string, number[]> = {};
@@ -243,8 +226,8 @@ function calculateDimensionScores(
 }
 
 function calculateTimingScores(
-  metrics: PostMetrics[],
-  topThreshold: number
+  metrics: AnalyzedPost[],
+  _topThreshold: number
 ): Record<string, { day: number; hour: number; score: number }> {
   const timing: Record<string, { day: number; hour: number; scores: number[] }> = {};
 
@@ -263,10 +246,9 @@ function calculateTimingScores(
   return result;
 }
 
-function identifyUnderperformingPatterns(posts: PostMetrics[]): string[] {
+function identifyUnderperformingPatterns(posts: AnalyzedPost[]): string[] {
   const patterns: string[] = [];
 
-  // Find common traits of underperforming posts
   const lowHookTypes = posts.map((p) => p.hookType);
   const hookCounts = lowHookTypes.reduce((acc, h) => {
     acc[h] = (acc[h] || 0) + 1;
@@ -286,11 +268,12 @@ function getPercentile(values: number[], percentile: number): number {
   return sorted[Math.max(0, idx)];
 }
 
-function calculateConfidence(sampleSize: number, totalPosts: number): number {
-  if (totalPosts < 3) return 0.2;
-  if (totalPosts < 10) return 0.5;
-  if (totalPosts < 25) return 0.7;
-  if (totalPosts < 50) return 0.85;
+function calculateConfidence(measuredPosts: number, totalPosts: number): number {
+  if (measuredPosts < 3) return 0.2;
+  if (measuredPosts < 10) return 0.5;
+  if (measuredPosts < 25) return 0.7;
+  if (measuredPosts < 50) return 0.85;
+  void totalPosts;
   return 0.95;
 }
 
@@ -308,6 +291,10 @@ function getEmptyPerformanceDNA(): PerformanceDNA {
     confidenceScore: 0.1,
     sampleSize: 0,
   };
+}
+
+async function deleteStoredDNA(userId: string): Promise<void> {
+  await sql`DELETE FROM performance_dna WHERE "userId" = ${userId}`;
 }
 
 async function storePerformanceDNA(userId: string, dna: PerformanceDNA): Promise<void> {

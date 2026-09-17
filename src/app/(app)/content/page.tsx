@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { useLinkedInGate, connectUrl } from "@/hooks/use-linkedin-gate";
 
 interface Post {
   id: string;
@@ -38,6 +39,9 @@ export default function ContentPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [message, setMessage] = useState("");
+  // Publishing gate: publishing requires a connected LinkedIn account
+  const { connected: linkedinConnected } = useLinkedInGate();
+  const [connectPrompt, setConnectPrompt] = useState(false);
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -106,6 +110,11 @@ export default function ContentPage() {
   };
 
   const publishPost = async (id: string) => {
+    // Gate: don't even try the API without a connection — show the connect CTA.
+    if (linkedinConnected === false) {
+      setConnectPrompt(true);
+      return;
+    }
     try {
       const res = await fetch(`/api/posts/${id}/publish`, { method: "POST" });
       const data = await res.json();
@@ -128,6 +137,32 @@ export default function ContentPage() {
       {message && (
         <div className="bg-blue-50 text-blue-800 text-sm p-3 rounded mb-4">
           {message}
+        </div>
+      )}
+
+      {/* LinkedIn connection prompt: shown when Publish is clicked while disconnected */}
+      {connectPrompt && linkedinConnected === false && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-900 text-sm p-4 rounded mb-4 flex items-center justify-between gap-4">
+          <div>
+            <p className="font-medium">Connect LinkedIn to publish</p>
+            <p className="text-amber-700">
+              Publishing to LinkedIn requires a connected account. Everything else
+              works without it.
+            </p>
+          </div>
+          <div className="flex gap-2 shrink-0">
+            <Button
+              size="sm"
+              onClick={() => {
+                window.location.href = connectUrl("/content");
+              }}
+            >
+              🔗 Connect LinkedIn
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setConnectPrompt(false)}>
+              Dismiss
+            </Button>
+          </div>
         </div>
       )}
 
@@ -218,8 +253,17 @@ export default function ContentPage() {
                       </Button>
                     )}
                     {(post.status === "APPROVED" || post.status === "DRAFT") && (
-                      <Button size="sm" variant="ghost" onClick={() => publishPost(post.id)}>
-                        Publish
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => publishPost(post.id)}
+                        title={
+                          linkedinConnected === false
+                            ? "Connect LinkedIn to publish"
+                            : "Publish to LinkedIn now"
+                        }
+                      >
+                        {linkedinConnected === false ? "🔒 Publish" : "Publish"}
                       </Button>
                     )}
                     <Button size="sm" variant="ghost" onClick={() => duplicatePost(post.id)}>

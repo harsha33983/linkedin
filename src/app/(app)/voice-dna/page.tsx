@@ -155,6 +155,7 @@ export default function VoiceDnaPage() {
   const [message, setMessage] = useState("");
   const [importingLinkedIn, setImportingLinkedIn] = useState(false);
   const [autoImportAvailable, setAutoImportAvailable] = useState(false);
+  const [hasLinkedIn, setHasLinkedIn] = useState(false);
   const autoImportFiredRef = useRef(false);
 
   const fetchData = useCallback(async () => {
@@ -169,6 +170,7 @@ export default function VoiceDnaPage() {
       if (voiceData.meta?.autoImport?.available) {
         setAutoImportAvailable(true);
       }
+      setHasLinkedIn(Boolean(voiceData.meta?.autoImport?.hasLinkedIn));
       if (samplesData.success) setSamples(samplesData.data);
     } catch (err) {
       console.error("Failed to fetch Voice DNA data:", err);
@@ -766,6 +768,14 @@ export default function VoiceDnaPage() {
                   </span>
                 )}
               </Button>
+              {!hasLinkedIn && (
+                <a
+                  href="/settings/linkedin"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-2"
+                >
+                  Connect LinkedIn to pull your feed posts →
+                </a>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -794,6 +804,14 @@ export default function VoiceDnaPage() {
                   <span className="flex items-center gap-1">Import my published posts</span>
                 )}
               </Button>
+              {!hasLinkedIn && (
+                <a
+                  href="/settings/linkedin"
+                  className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 underline underline-offset-2"
+                >
+                  Connect LinkedIn to also pull your feed posts →
+                </a>
+              )}
               <span className="text-xs text-gray-400">
                 Pulls posts you already published through this app — no manual pasting.
               </span>

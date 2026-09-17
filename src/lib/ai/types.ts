@@ -59,11 +59,22 @@ export interface AIProvider {
     voiceProfile: VoiceProfile,
     recentHooks: string[]
   ): Promise<QualityCheckResult>;
+
+  /**
+   * Optional streaming post generation: delivers the raw model output
+   * token-by-token via onText as it arrives (delimiter protocol, see
+   * post-generation-stream.ts). Providers that don't support streaming
+   * simply omit this — the route falls back to the buffered path.
+   */
+  streamPost?(
+    params: GeneratePostParams & { recentPosts?: any[]; trendingTopics?: any[]; contentPillars?: string[] },
+    onText: (delta: string) => void
+  ): Promise<void>;
 }
 
 /**
  * Get the primary AI provider based on environment configuration.
- * Options: groq, kimi, openai
+ * Options: groq, kimi, openai, openrouter
  */
 export function getProvider(): AIProvider {
   const providerName = process.env.AI_PROVIDER || "kimi";
@@ -78,25 +89,86 @@ export function getProvider(): AIProvider {
     case "openai":
       const { OpenAIProvider } = require("./openai-provider");
       return new OpenAIProvider();
+    case "openrouter":
+      const { OpenRouterProvider } = require("./openrouter-provider");
+      return new OpenRouterProvider();
     default:
       throw new Error(`Unknown AI provider: ${providerName}`);
   }
 }
 
 /**
+ * Run an AI operation on the primary provider, automatically retrying on the
+ * secondary provider if the primary throws or returns a unusable result.
+ *
+ * This is the app-wide failover layer: if the configured AI_PROVIDER is down,
+ * rate-limited, or misbehaving, generation transparently continues on the
+ * secondary (normally Groq ⇄ OpenRouter) instead of erroring to the user.
+ */
+export async function withFailover<T>(
+  op: (provider: AIProvider) => Promise<T>,
+  isUsable: (result: T) => boolean = () => true
+): Promise<{ result: T; provider: string }> {
+  // Construction and the call both sit inside try: a provider whose SDK
+  // throws on a missing/invalid key must still allow failover to proceed.
+  let primary: AIProvider;
+  try {
+    primary = getProvider();
+  } catch (err: any) {
+    console.warn(
+      `[AI Failover] Primary "${process.env.AI_PROVIDER || "kimi"}" could not be initialized — falling back:`,
+      String(err?.message || err).slice(0, 160)
+    );
+    const secondary = getSecondaryProvider();
+    const result = await op(secondary);
+    if (!isUsable(result)) {
+      throw new Error(`AI generation failed on secondary provider (${secondary.name})`);
+    }
+    return { result, provider: secondary.name };
+  }
+  try {
+    const result = await op(primary);
+    if (isUsable(result)) return { result, provider: primary.name };
+    console.warn(
+      `[AI Failover] Primary "${primary.name}" returned an unusable result — retrying on secondary`
+    );
+  } catch (err: any) {
+    console.warn(
+      `[AI Failover] Primary "${primary.name}" failed — retrying on secondary:`,
+      String(err?.message || err).slice(0, 160)
+    );
+  }
+
+  const secondary = getSecondaryProvider();
+  const result = await op(secondary);
+  if (!isUsable(result)) {
+    throw new Error(
+      `AI generation failed on both primary (${primary.name}) and secondary (${secondary.name}) providers`
+    );
+  }
+  return { result, provider: secondary.name };
+}
+
+/**
  * Get a secondary provider for fallback or specific tasks.
- * Returns Groq for fast tasks (quality checks, ideas) when primary is Kimi.
+ * Groq is the universal fallback — it is the only provider with a proven,
+ * working key (kimi/kiosapi returns 403 and openai has no key configured).
  */
 export function getSecondaryProvider(): AIProvider {
   const primary = process.env.AI_PROVIDER || "kimi";
-  
-  if (primary === "kimi") {
-    // Use Groq for fast fallback tasks
+
+  if (primary !== "groq") {
+    // Any non-Groq primary falls back to Groq
     const { GroqProvider } = require("./groq-provider");
     return new GroqProvider();
   }
-  
-  // Default fallback to Kimi for tasks needing more capability
+
+  // Groq primary → try OpenRouter next (free models need no credits)
+  if (process.env.OPENROUTER_API_KEY) {
+    const { OpenRouterProvider } = require("./openrouter-provider");
+    return new OpenRouterProvider();
+  }
+
   const { KimiProvider } = require("./kimi-provider");
   return new KimiProvider();
 }

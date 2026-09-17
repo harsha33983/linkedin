@@ -12,13 +12,19 @@ const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 /**
  * Fetch an image URL from Unsplash based on a search query.
  * Falls back to a curated list of relevant images if API is unavailable.
+ *
+ * @param page Unsplash results page to use (1 = first result). Pass a random
+ *             page when regenerating so "New image" returns a different photo.
  */
-export async function fetchPostImage(query: string): Promise<string | null> {
+export async function fetchPostImage(
+  query: string,
+  page: number = 1
+): Promise<string | null> {
   // Try Unsplash API first
   if (UNSPLASH_ACCESS_KEY) {
     try {
       const response = await fetch(
-        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+        `https://api.unsplash.com/search/photos?query=${encodeURIComponent(query)}&per_page=1&page=${Math.max(1, Math.floor(page))}&orientation=landscape`,
         {
           headers: {
             Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}`,

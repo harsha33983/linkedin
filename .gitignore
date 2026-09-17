@@ -28,17 +28,12 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files
+# env files — never commit secrets
 .env
-.env*.local
+.env.*
+!.env.example
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-# prisma
-prisma/migrations/
-public/uploads/
+# scraper service env files (same rule)
+scraper-service/.env
+scraper-service/.env.*
+!scraper-service/.env.example

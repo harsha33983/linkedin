@@ -29,6 +29,9 @@ export async function PATCH(
     if (!existing) throw new NotFoundError("ContentIdea", id);
 
     const dismissedAt = parsed.status === "dismissed" ? new Date() : null;
+    // Restoring to active also clears the used marker so the idea can be
+    // drafted again; a fresh consume will set usedAt once more.
+    const clearUsed = parsed.status === "active";
 
     const [updated] = await sql`
       UPDATE content_ideas SET
@@ -37,7 +40,8 @@ export async function PATCH(
         topic = COALESCE(${parsed.topic || null}, topic),
         format = COALESCE(${parsed.format || null}, format),
         status = COALESCE(${parsed.status || null}, status),
-        "dismissedAt" = COALESCE(${dismissedAt}, "dismissedAt")
+        "dismissedAt" = COALESCE(${dismissedAt}, "dismissedAt"),
+        "usedAt" = ${clearUsed ? sql`NULL` : sql`"usedAt"`}
       WHERE id = ${id}
       RETURNING *
     `;

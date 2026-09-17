@@ -80,6 +80,11 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/ideas — List all content ideas with optional filters
+ *
+ * Active ideas exclude "used" ideas (marked with usedAt when the user
+ * generates a post from them) so the list always shows fresh, unhandled
+ * opportunities. Dismissed tab also surfaces used ideas so nothing is
+ * silently lost — they can be re-activated from there.
  */
 export async function GET(request: NextRequest) {
   try {
@@ -87,13 +92,50 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status") || "active";
 
-    const ideas = await sql`
-      SELECT * FROM content_ideas 
-      WHERE "userId" = ${userId} AND status = ${status}
-      ORDER BY "createdAt" DESC
-    `;
+    const ideas =
+      status === "active"
+        ? await sql`
+            SELECT * FROM content_ideas
+            WHERE "userId" = ${userId} AND status = 'active' AND "usedAt" IS NULL
+            ORDER BY "createdAt" DESC
+          `
+        : await sql`
+            SELECT * FROM content_ideas
+            WHERE "userId" = ${userId} AND (status = ${status} OR "usedAt" IS NOT NULL)
+            ORDER BY "createdAt" DESC
+          `;
 
     return Response.json({ success: true, data: ideas, total: ideas.length });
+  } catch (error) {
+    return handleApiError(error);
+  }
+}
+
+/**
+ * POST /api/ideas?action=consume — mark one idea as used (called by the
+ * AI post generator after a successful generation) so it disappears from
+ * the active list.
+ *
+ * Body: { ideaId: "<uuid>" }
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const userId = await requireAuthFromRequest(request as any);
+    const body = await request.json();
+    const { ideaId } = z.object({ ideaId: z.string().uuid() }).parse(body);
+
+    const [updated] = await sql`
+      UPDATE content_ideas
+      SET "usedAt" = CURRENT_TIMESTAMP
+      WHERE id = ${ideaId} AND "userId" = ${userId} AND "usedAt" IS NULL
+      RETURNING id, title, "usedAt"
+    `;
+
+    if (!updated) {
+      return Response.json({ success: true, data: null, message: "Idea already used or not found." });
+    }
+
+    return Response.json({ success: true, data: updated });
   } catch (error) {
     return handleApiError(error);
   }

@@ -27,25 +27,31 @@ export async function GET(request: NextRequest) {
   const errorDescription = searchParams.get("error_description");
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-  const redirectBase = `${baseUrl}/settings/integrations`;
+  const defaultRedirectBase = `${baseUrl}/settings/integrations`;
 
   // Handle LinkedIn error responses
   if (error) {
     const message = encodeURIComponent(errorDescription || error);
-    return Response.redirect(`${redirectBase}?error=linkedin_auth_denied&message=${message}`);
+    return Response.redirect(`${defaultRedirectBase}?error=linkedin_auth_denied&message=${message}`);
   }
 
   if (!code || !state) {
-    return Response.redirect(`${redirectBase}?error=linkedin_missing_params`);
+    return Response.redirect(`${defaultRedirectBase}?error=linkedin_missing_params`);
   }
 
   // 1. Validate CSRF state
   const stateData = validateOAuthState(state);
   if (!stateData) {
-    return Response.redirect(`${redirectBase}?error=linkedin_invalid_state`);
+    return Response.redirect(`${defaultRedirectBase}?error=linkedin_invalid_state`);
   }
 
-  const { userId } = stateData;
+  const { userId, returnTo } = stateData;
+
+  // When OAuth started from onboarding, land the user back there after
+  // connecting (otherwise the default is the integrations settings page).
+  const redirectBase = `${baseUrl}${
+    returnTo && returnTo.startsWith("/onboarding") ? returnTo : "/settings/integrations"
+  }`;
 
   // 2. Exchange authorization code for tokens
   const clientId = process.env.LINKEDIN_CLIENT_ID;

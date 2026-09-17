@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { sql } from "@/lib/db";
 import { requireAuthFromRequest } from "@/lib/auth/get-session";
 import { handleApiError, ValidationError, AiGenerationError } from "@/lib/errors/api-errors";
-import { getProvider } from "@/lib/ai/types";
+import { withFailover } from "@/lib/ai/types";
+import { checkRateLimitRedis } from "@/lib/rate-limit/redis-limiter";
 import { z } from "zod";
 
 const analyzePostSchema = z.object({
@@ -15,6 +16,10 @@ const analyzePostSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const userId = await requireAuthFromRequest(request as any);
+    const rl = await checkRateLimitRedis(`ai:analyze-post:${userId}`, 40, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return Response.json({ success: false, error: "Rate limit exceeded. Please try again later.", resetAt: rl.resetAt }, { status: 429 });
+    }
     const body = await request.json();
     const parsed = analyzePostSchema.parse(body);
 
@@ -41,18 +46,10 @@ export async function POST(request: NextRequest) {
       })
       .filter(Boolean);
 
-    const provider = getProvider();
-    let result;
-    try {
-      result = await provider.checkQuality(
-        parsed.content,
-        voiceProfile as any,
-        recentHooks
-      );
-    } catch (aiError) {
-      console.error("Post analysis failed:", aiError);
-      throw new AiGenerationError("Analysis failed. Please try again.");
-    }
+    // Quality check (with provider failover)
+    const { result } = await withFailover((provider) =>
+      provider.checkQuality(parsed.content, voiceProfile as any, recentHooks)
+    );
 
     return Response.json({
       success: true,

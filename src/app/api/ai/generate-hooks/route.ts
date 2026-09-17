@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import { sql } from "@/lib/db";
 import { requireAuthFromRequest } from "@/lib/auth/get-session";
 import { handleApiError, ValidationError, AiGenerationError } from "@/lib/errors/api-errors";
-import { getProvider } from "@/lib/ai/types";
+import { withFailover } from "@/lib/ai/types";
+import { checkRateLimitRedis } from "@/lib/rate-limit/redis-limiter";
 import { z } from "zod";
 
 const generateHooksSchema = z.object({
@@ -22,6 +23,10 @@ const generateHooksSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const userId = await requireAuthFromRequest(request as any);
+    const rl = await checkRateLimitRedis(`ai:hooks:${userId}`, 40, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return Response.json({ success: false, error: "Rate limit exceeded. Please try again later.", resetAt: rl.resetAt }, { status: 429 });
+    }
     const body = await request.json();
     const parsed = generateHooksSchema.parse(body);
 
@@ -49,20 +54,15 @@ export async function POST(request: NextRequest) {
       })
       .filter(Boolean);
 
-    // Generate hooks
-    const provider = getProvider();
-    let result;
-    try {
-      result = await provider.generateHooks({
+    // Generate hooks (with provider failover)
+    const { result } = await withFailover((provider) =>
+      provider.generateHooks({
         topic: parsed.topic,
         targetAudience: parsed.targetAudience,
         hookType: parsed.hookType,
         voiceProfile: voiceProfile as any,
-      });
-    } catch (aiError) {
-      console.error("Hook generation failed:", aiError);
-      throw new AiGenerationError("Hook generation failed. Please try again.");
-    }
+      })
+    );
 
     // Store generation record
     await sql`
